@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Entity
 @Table(name = "lost_pets")
 @Data
+
 public class LostPet {
 
     @Id
@@ -31,7 +32,7 @@ public class LostPet {
     private String status; // kayıp,bulundu gibi
 
     @Column(name = "additional_info")
-    private String additionalInfo; // ödüllü, acil, boş
+    private String additionalInfo; // ödüllü, acil, boş, blabla
 
     @Column(name = "image_url",nullable = true)
     private String imageUrl;
