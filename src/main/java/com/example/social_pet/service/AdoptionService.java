@@ -9,6 +9,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,11 +20,14 @@ public class AdoptionService {
     @Autowired
     private final UserRepository userRepository;
     private final AdoptionRepository adoptionRepository;
+    private final FileStorageService fileStorageService;
 
-    public AdoptionService(UserRepository userRepository,AdoptionRepository adoptionRepository) {
+    public AdoptionService(UserRepository userRepository, AdoptionRepository adoptionRepository, FileStorageService fileStorageService) {
         this.userRepository = userRepository;
         this.adoptionRepository = adoptionRepository;
+        this.fileStorageService = fileStorageService;
     }
+
     @Transactional
     public ResponseEntity<Adoption> createAdoption(AdoptionRequestDTO adoptionRequest) {
         User user = userRepository.findById(adoptionRequest.getUser().getId())
@@ -42,8 +47,6 @@ public class AdoptionService {
         adoption.setDistrict(adoptionRequest.getDistrict());
         adoption.setFullName(adoptionRequest.getFullName());
         adoption.setPhone(adoptionRequest.getPhone());
-        adoption.setCreatedAt(adoptionRequest.getCreatedAt().atStartOfDay());
-        //adoption.setImageUrl(adoptionRequest.getImageUrl());
 
         if (adoptionRequest.getCreatedAt() == null) {
             adoption.setCreatedAt(LocalDate.now().atStartOfDay());
@@ -54,6 +57,20 @@ public class AdoptionService {
         adoption.setUser(user);
         Adoption newAdoption = adoptionRepository.save(adoption);
         return ResponseEntity.ok(newAdoption);
+    }
+
+    @Transactional
+    public void uploadPhoto(Long adoptionId, MultipartFile photo) {
+        Adoption adoption = adoptionRepository.findById(adoptionId)
+                .orElseThrow(() -> new RuntimeException("Adoption not found"));
+
+        if (photo != null && !photo.isEmpty()) {
+            String fileName = fileStorageService.storeFile(photo);
+            adoption.setImageUrl(fileName);
+            adoptionRepository.save(adoption);
+        } else {
+            throw new RuntimeException("Photo file is required");
+        }
     }
 
     public List<Adoption> getRecentAds() {
