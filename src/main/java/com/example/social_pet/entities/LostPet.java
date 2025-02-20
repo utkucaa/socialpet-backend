@@ -34,7 +34,7 @@ public class LostPet {
     @Column(name = "additional_info")
     private String additionalInfo; // ödüllü, acil, boş, blabla
 
-    @Column(name = "image_url",nullable = true)
+    @Column(name = "image_url", nullable = true, length = 1000000)
     private String imageUrl;
 
     @Column(name = "contact_info", nullable = false)
