@@ -1,4 +1,5 @@
 package com.example.social_pet.controller;
+import com.example.social_pet.dto.UserCardDto;
 import com.example.social_pet.dto.UserDTO;
 import com.example.social_pet.dto.UserStatsDTO;
 import com.example.social_pet.entities.User;
@@ -21,10 +22,11 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<User> loginUser(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<UserCardDto> loginUser(@RequestBody LoginRequest loginRequest) {
         try {
             User user = userService.loginUser(loginRequest.getEmail(), loginRequest.getPassword());
-            return ResponseEntity.ok(user);
+            UserCardDto userDTO = new UserCardDto(user);
+            return ResponseEntity.ok(userDTO);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -33,8 +35,9 @@ public class UserController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
         try {
-            User user = userService.registerUser(userDTO); // registerUser başarılı ise
-            return ResponseEntity.status(HttpStatus.CREATED).body(user); // Kullanıcı oluşturulduğunda 201 döndür
+            User user = userService.registerUser(userDTO);
+            UserCardDto responseDTO = new UserCardDto(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Kayıt işlemi başarısız. Lütfen tekrar deneyin.");
