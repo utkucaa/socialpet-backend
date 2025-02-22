@@ -27,6 +27,7 @@ public class User {
     private String email;
     private String password;
     private String phoneNumber;
+    private String avatarUrl;
 
     @JsonIgnore
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
