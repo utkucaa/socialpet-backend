@@ -4,6 +4,7 @@ import com.example.social_pet.dto.UserStatsDTO;
 import com.example.social_pet.entities.User;
 import com.example.social_pet.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Date;
@@ -16,6 +17,9 @@ public class UserService {
     @Autowired
     private FileStorageService fileStorageService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public UserService(UserRepository userRepository){
         this.userRepository = userRepository;
     }
@@ -23,8 +27,7 @@ public class UserService {
     public User loginUser(String email, String password) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Invalid email or password"));
-
-        if (!user.getPassword().equals(password)) {
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid email or password");
         }
 
@@ -54,7 +57,7 @@ public class UserService {
         newUser.setUserName(userDTO.getUserName());
         newUser.setEmail(userDTO.getEmail());
         newUser.setPhoneNumber(userDTO.getPhoneNumber());
-        newUser.setPassword(userDTO.getPassword());
+        newUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
         return userRepository.save(newUser);
     }
