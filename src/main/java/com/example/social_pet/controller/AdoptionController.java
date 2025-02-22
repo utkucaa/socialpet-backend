@@ -13,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/adoption")
+@RequestMapping("/api/v1/adoption")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class AdoptionController {
 
@@ -37,7 +37,7 @@ public class AdoptionController {
     @PostMapping(value = "/{id}/upload-photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> uploadPhoto(
             @PathVariable Long id,
-            @RequestParam("photo") MultipartFile photo) {
+            @RequestParam("file") MultipartFile photo) {
         try {
             adoptionService.uploadPhoto(id, photo);
             return ResponseEntity.ok().build();
@@ -51,6 +51,15 @@ public class AdoptionController {
     public ResponseEntity<List<Adoption>> getRecentAds() {
         List<Adoption> recentAds = adoptionService.getRecentAds();
         return ResponseEntity.ok(recentAds);
+    }
+
+    @GetMapping("/{slug}")
+    public ResponseEntity<Adoption> getAdoptionBySlug(@PathVariable String slug) {
+        try {
+            return adoptionService.getBySlug(slug);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     private static class ErrorResponse {

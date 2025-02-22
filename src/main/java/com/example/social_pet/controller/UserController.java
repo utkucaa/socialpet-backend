@@ -4,6 +4,7 @@ import com.example.social_pet.dto.UserDTO;
 import com.example.social_pet.dto.UserStatsDTO;
 import com.example.social_pet.entities.User;
 import com.example.social_pet.request.LoginRequest;
+import com.example.social_pet.response.FileUrlResponse;
 import com.example.social_pet.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -75,6 +76,19 @@ public class UserController {
             return ResponseEntity.ok(updatedUser);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+    }
+
+    @PostMapping(value = "/profile-picture", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<FileUrlResponse> uploadProfilePicture(
+            @RequestParam("file") MultipartFile file,
+            @RequestHeader("Authorization") String token) {
+        try {
+            String fileUrl = userService.updateProfilePicture(file, token);
+            return ResponseEntity.ok(new FileUrlResponse(fileUrl));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
         }
     }
 }

@@ -46,6 +46,8 @@ public class LostPet {
     @Column(name = "last_seen_location")
     private String lastSeenLocation;
 
+    private Integer viewCount;
+
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
