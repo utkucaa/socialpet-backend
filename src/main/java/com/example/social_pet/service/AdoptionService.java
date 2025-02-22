@@ -7,12 +7,14 @@ import com.example.social_pet.repository.AdoptionRepository;
 import com.example.social_pet.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AdoptionService {
@@ -30,33 +32,55 @@ public class AdoptionService {
 
     @Transactional
     public ResponseEntity<Adoption> createAdoption(AdoptionRequestDTO adoptionRequest) {
-        User user = userRepository.findById(adoptionRequest.getUser().getId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        try {
+            User user = userRepository.findById(adoptionRequest.getUser().getId())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Adoption adoption = new Adoption();
-        adoption.setAnimalType(adoptionRequest.getAnimalType());
-        adoption.setPetName(adoptionRequest.getPetName());
-        adoption.setBreed(adoptionRequest.getBreed());
-        adoption.setAge(adoptionRequest.getAge());
-        adoption.setGender(adoptionRequest.getGender());
-        adoption.setSize(adoptionRequest.getSize());
-        adoption.setTitle(adoptionRequest.getTitle());
-        adoption.setDescription(adoptionRequest.getDescription());
-        adoption.setSource(adoptionRequest.getSource());
-        adoption.setCity(adoptionRequest.getCity());
-        adoption.setDistrict(adoptionRequest.getDistrict());
-        adoption.setFullName(adoptionRequest.getFullName());
-        adoption.setPhone(adoptionRequest.getPhone());
+            Adoption adoption = new Adoption();
+            adoption.setAnimalType(adoptionRequest.getAnimalType());
+            adoption.setPetName(adoptionRequest.getPetName());
+            adoption.setBreed(adoptionRequest.getBreed());
+            adoption.setAge(adoptionRequest.getAge());
+            adoption.setGender(adoptionRequest.getGender());
+            adoption.setSize(adoptionRequest.getSize());
+            adoption.setTitle(adoptionRequest.getTitle());
+            adoption.setDescription(adoptionRequest.getDescription());
+            adoption.setSource(adoptionRequest.getSource());
+            adoption.setCity(adoptionRequest.getCity());
+            adoption.setDistrict(adoptionRequest.getDistrict());
+            adoption.setFullName(adoptionRequest.getFullName());
+            adoption.setPhone(adoptionRequest.getPhone());
+            adoption.setUser(user);
+            adoption.setViewCount(0);
+            adoption.setSlug(generateSlug(adoptionRequest.getTitle()));
 
-        if (adoptionRequest.getCreatedAt() == null) {
-            adoption.setCreatedAt(LocalDate.now().atStartOfDay());
-        } else {
-            adoption.setCreatedAt(adoptionRequest.getCreatedAt().atStartOfDay());
+            if (adoptionRequest.getCreatedAt() == null) {
+                adoption.setCreatedAt(LocalDate.now().atStartOfDay());
+            } else {
+                adoption.setCreatedAt(adoptionRequest.getCreatedAt().atStartOfDay());
+            }
+
+            Adoption savedAdoption = adoptionRepository.save(adoption);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedAdoption);
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating adoption: " + e.getMessage());
         }
+    }
 
-        adoption.setUser(user);
-        Adoption newAdoption = adoptionRepository.save(adoption);
-        return ResponseEntity.ok(newAdoption);
+    private String generateSlug(String title) {
+        return title.toLowerCase()
+                .replaceAll("[^a-z0-9\\s-]", "") // Remove all non-alphanumeric characters except spaces and hyphens
+                .replaceAll("\\s+", "-") // Replace spaces with hyphens
+                .replaceAll("-+", "-") // Replace multiple hyphens with single hyphen
+                + "-" + UUID.randomUUID().toString().substring(0, 8); // Add unique identifier
+    }
+
+    public ResponseEntity<Adoption> getBySlug(String slug) {
+        Adoption adoption = adoptionRepository.findBySlug(slug)
+                .orElseThrow(() -> new RuntimeException("Adoption not found with slug: " + slug));
+        
+        incrementViewCount(adoption);
+        return ResponseEntity.ok(adoption);
     }
 
     @Transactional
@@ -66,14 +90,26 @@ public class AdoptionService {
 
         if (photo != null && !photo.isEmpty()) {
             String fileName = fileStorageService.storeFile(photo);
-            adoption.setImageUrl(fileName);
+            String fileUrl = "/api/v1/files/" + fileName;
+            adoption.setImageUrl(fileUrl);
             adoptionRepository.save(adoption);
         } else {
             throw new RuntimeException("Photo file is required");
         }
     }
 
+    @Transactional
+    public void incrementViewCount(Adoption adoption) {
+        if (adoption.getViewCount() == null) {
+            adoption.setViewCount(1);
+        } else {
+            adoption.setViewCount(adoption.getViewCount() + 1);
+        }
+        adoptionRepository.save(adoption);
+    }
+
     public List<Adoption> getRecentAds() {
-        return (List<Adoption>) adoptionRepository.findTop5ByOrderByCreatedAtDesc();
+        List<Adoption> adoptions = adoptionRepository.findAll();
+        return adoptions;
     }
 }

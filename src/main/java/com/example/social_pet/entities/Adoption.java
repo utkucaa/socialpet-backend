@@ -23,6 +23,8 @@ public class Adoption {
     private String gender;
     private String size;
 
+    private Integer viewCount;
+
     private String title;
 
     @Column(columnDefinition = "TEXT")
@@ -35,6 +37,9 @@ public class Adoption {
     private String phone;
     private String imageUrl;
 
+    @Column(unique = true)
+    private String slug;
+
     @Column(nullable = true)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -43,5 +48,13 @@ public class Adoption {
     private User user;
 
     public void setPhotoUrl(String fileUrl) {
+    }
+
+    public String getSlug() {
+        return slug;
+    }
+
+    public void setSlug(String slug) {
+        this.slug = slug;
     }
 }
