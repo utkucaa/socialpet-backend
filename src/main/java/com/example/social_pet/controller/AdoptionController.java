@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 
 @RestController
@@ -69,6 +69,7 @@ public class AdoptionController {
             this.message = message;
         }
 
+        @JsonProperty("message")
         public String getMessage() {
             return message;
         }
