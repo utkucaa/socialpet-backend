@@ -10,16 +10,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PetDto {
-    private Long id;
+public class PetRequestDto {
     private String name;
     private int age;
     private String gender;
     private AnimalType animalType;
-    private String animalTypeName;
     private Long ownerId;
-    private String ownerName;
     private Long breedId;
-    private String breedName;
-    private Boolean isActive;
 } 

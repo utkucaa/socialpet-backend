@@ -1,5 +1,6 @@
 package com.example.social_pet.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -14,6 +15,7 @@ public class Allergy {
 
     @ManyToOne
     @JoinColumn(name = "medical_record_id", nullable = false)
+    @JsonBackReference
     private MedicalRecord medicalRecord;
 
     public Allergy() {}

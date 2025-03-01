@@ -34,6 +34,14 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
     }
 
+    public User loginUser(String email, String password) {
+        User user = findByEmail(email);
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Invalid password");
+        }
+        return user;
+    }
+
     public User registerUser(UserDTO userDTO) {
         if(userRepository.findByEmail(userDTO.getEmail()).isPresent()) {
             throw new RuntimeException("Email is already taken!");

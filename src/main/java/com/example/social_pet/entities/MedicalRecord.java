@@ -1,5 +1,7 @@
 package com.example.social_pet.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -14,24 +16,31 @@ public class MedicalRecord {
 
     @ManyToOne
     @JoinColumn(name = "pet_id", nullable = false)
+    @JsonBackReference
     private Pet pet;
 
-    @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @JsonManagedReference
     private List<Vaccination> vaccinations = new ArrayList<>();
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Treatment> treatments = new ArrayList<>();
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Appointment> appointments = new ArrayList<>();
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Medication> medications = new ArrayList<>();
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Allergy> allergies = new ArrayList<>();
 
     @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<WeightRecord> weightRecords = new ArrayList<>();
 
     public MedicalRecord() {}

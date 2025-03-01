@@ -4,15 +4,16 @@ import com.example.social_pet.dto.MedicalRecordRequest;
 import com.example.social_pet.entities.*;
 import com.example.social_pet.service.MedicalRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/medical-records")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class MedicalRecordController {
 
     private final MedicalRecordService medicalRecordService;
@@ -22,11 +23,11 @@ public class MedicalRecordController {
         this.medicalRecordService = medicalRecordService;
     }
 
-    // MedicalRecord endpoints
+    // Medical Record CRUD operations
     @PostMapping
     public ResponseEntity<MedicalRecord> createMedicalRecord(@RequestBody MedicalRecordRequest request) {
         MedicalRecord medicalRecord = medicalRecordService.createMedicalRecord(request.getPetId());
-        return ResponseEntity.ok(medicalRecord);
+        return new ResponseEntity<>(medicalRecord, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
@@ -37,110 +38,123 @@ public class MedicalRecordController {
 
     @GetMapping("/pet/{petId}")
     public ResponseEntity<List<MedicalRecord>> getMedicalRecordsByPetId(@PathVariable Long petId) {
-        List<MedicalRecord> records = medicalRecordService.getMedicalRecordsByPetId(petId);
-        return ResponseEntity.ok(records);
+        List<MedicalRecord> medicalRecords = medicalRecordService.getMedicalRecordsByPetId(petId);
+        return ResponseEntity.ok(medicalRecords);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteMedicalRecord(@PathVariable Long id) {
         medicalRecordService.deleteMedicalRecord(id);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.noContent().build();
     }
 
-    // Vaccination endpoints
-    @PostMapping("/{id}/vaccinations")
-    public ResponseEntity<Vaccination> addVaccination(@PathVariable Long id, @RequestBody Vaccination vaccination) {
-        Vaccination savedVaccination = medicalRecordService.addVaccination(id, vaccination);
-        return ResponseEntity.ok(savedVaccination);
+    // Vaccination operations
+    @PostMapping("/{medicalRecordId}/vaccinations")
+    public ResponseEntity<Vaccination> addVaccination(
+            @PathVariable Long medicalRecordId,
+            @RequestBody Vaccination vaccination) {
+        Vaccination savedVaccination = medicalRecordService.addVaccination(medicalRecordId, vaccination);
+        return new ResponseEntity<>(savedVaccination, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}/vaccinations")
-    public ResponseEntity<List<Vaccination>> getVaccinations(@PathVariable Long id) {
-        List<Vaccination> vaccinations = medicalRecordService.getVaccinations(id);
+    @GetMapping("/{medicalRecordId}/vaccinations")
+    public ResponseEntity<List<Vaccination>> getVaccinations(@PathVariable Long medicalRecordId) {
+        List<Vaccination> vaccinations = medicalRecordService.getVaccinations(medicalRecordId);
         return ResponseEntity.ok(vaccinations);
     }
 
-    // Treatment endpoints
-    @PostMapping("/{id}/treatments")
-    public ResponseEntity<Treatment> addTreatment(@PathVariable Long id, @RequestBody Treatment treatment) {
-        Treatment savedTreatment = medicalRecordService.addTreatment(id, treatment);
-        return ResponseEntity.ok(savedTreatment);
+    // Treatment operations
+    @PostMapping("/{medicalRecordId}/treatments")
+    public ResponseEntity<Treatment> addTreatment(
+            @PathVariable Long medicalRecordId,
+            @RequestBody Treatment treatment) {
+        Treatment savedTreatment = medicalRecordService.addTreatment(medicalRecordId, treatment);
+        return new ResponseEntity<>(savedTreatment, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}/treatments")
-    public ResponseEntity<List<Treatment>> getTreatments(@PathVariable Long id) {
-        List<Treatment> treatments = medicalRecordService.getTreatments(id);
+    @GetMapping("/{medicalRecordId}/treatments")
+    public ResponseEntity<List<Treatment>> getTreatments(@PathVariable Long medicalRecordId) {
+        List<Treatment> treatments = medicalRecordService.getTreatments(medicalRecordId);
         return ResponseEntity.ok(treatments);
     }
 
-    // Appointment endpoints
-    @PostMapping("/{id}/appointments")
-    public ResponseEntity<Appointment> addAppointment(@PathVariable Long id, @RequestBody Appointment appointment) {
-        Appointment savedAppointment = medicalRecordService.addAppointment(id, appointment);
-        return ResponseEntity.ok(savedAppointment);
+    // Appointment operations
+    @PostMapping("/{medicalRecordId}/appointments")
+    public ResponseEntity<Appointment> addAppointment(
+            @PathVariable Long medicalRecordId,
+            @RequestBody Appointment appointment) {
+        Appointment savedAppointment = medicalRecordService.addAppointment(medicalRecordId, appointment);
+        return new ResponseEntity<>(savedAppointment, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}/appointments")
-    public ResponseEntity<List<Appointment>> getAppointments(@PathVariable Long id) {
-        List<Appointment> appointments = medicalRecordService.getAppointments(id);
+    @GetMapping("/{medicalRecordId}/appointments")
+    public ResponseEntity<List<Appointment>> getAppointments(@PathVariable Long medicalRecordId) {
+        List<Appointment> appointments = medicalRecordService.getAppointments(medicalRecordId);
         return ResponseEntity.ok(appointments);
     }
 
-    @GetMapping("/{id}/appointments/upcoming")
-    public ResponseEntity<List<Appointment>> getUpcomingAppointments(@PathVariable Long id) {
-        List<Appointment> appointments = medicalRecordService.getUpcomingAppointments(id);
-        return ResponseEntity.ok(appointments);
+    @GetMapping("/{medicalRecordId}/appointments/upcoming")
+    public ResponseEntity<List<Appointment>> getUpcomingAppointments(@PathVariable Long medicalRecordId) {
+        List<Appointment> upcomingAppointments = medicalRecordService.getUpcomingAppointments(medicalRecordId);
+        return ResponseEntity.ok(upcomingAppointments);
     }
 
-    // Medication endpoints
-    @PostMapping("/{id}/medications")
-    public ResponseEntity<Medication> addMedication(@PathVariable Long id, @RequestBody Medication medication) {
-        Medication savedMedication = medicalRecordService.addMedication(id, medication);
-        return ResponseEntity.ok(savedMedication);
+    // Medication operations
+    @PostMapping("/{medicalRecordId}/medications")
+    public ResponseEntity<Medication> addMedication(
+            @PathVariable Long medicalRecordId,
+            @RequestBody Medication medication) {
+        Medication savedMedication = medicalRecordService.addMedication(medicalRecordId, medication);
+        return new ResponseEntity<>(savedMedication, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}/medications")
-    public ResponseEntity<List<Medication>> getMedications(@PathVariable Long id) {
-        List<Medication> medications = medicalRecordService.getMedications(id);
+    @GetMapping("/{medicalRecordId}/medications")
+    public ResponseEntity<List<Medication>> getMedications(@PathVariable Long medicalRecordId) {
+        List<Medication> medications = medicalRecordService.getMedications(medicalRecordId);
         return ResponseEntity.ok(medications);
     }
 
-    @GetMapping("/{id}/medications/current")
-    public ResponseEntity<List<Medication>> getCurrentMedications(@PathVariable Long id) {
-        List<Medication> medications = medicalRecordService.getCurrentMedications(id);
-        return ResponseEntity.ok(medications);
+    @GetMapping("/{medicalRecordId}/medications/current")
+    public ResponseEntity<List<Medication>> getCurrentMedications(@PathVariable Long medicalRecordId) {
+        List<Medication> currentMedications = medicalRecordService.getCurrentMedications(medicalRecordId);
+        return ResponseEntity.ok(currentMedications);
     }
 
-    // Allergy endpoints
-    @PostMapping("/{id}/allergies")
-    public ResponseEntity<Allergy> addAllergy(@PathVariable Long id, @RequestBody Allergy allergy) {
-        Allergy savedAllergy = medicalRecordService.addAllergy(id, allergy);
-        return ResponseEntity.ok(savedAllergy);
+    // Allergy operations
+    @PostMapping("/{medicalRecordId}/allergies")
+    public ResponseEntity<Allergy> addAllergy(
+            @PathVariable Long medicalRecordId,
+            @RequestBody Allergy allergy) {
+        Allergy savedAllergy = medicalRecordService.addAllergy(medicalRecordId, allergy);
+        return new ResponseEntity<>(savedAllergy, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}/allergies")
-    public ResponseEntity<List<Allergy>> getAllergies(@PathVariable Long id) {
-        List<Allergy> allergies = medicalRecordService.getAllergies(id);
+    @GetMapping("/{medicalRecordId}/allergies")
+    public ResponseEntity<List<Allergy>> getAllergies(@PathVariable Long medicalRecordId) {
+        List<Allergy> allergies = medicalRecordService.getAllergies(medicalRecordId);
         return ResponseEntity.ok(allergies);
     }
 
-    // Weight record endpoints
-    @PostMapping("/{id}/weight-records")
-    public ResponseEntity<WeightRecord> addWeightRecord(@PathVariable Long id, @RequestBody WeightRecord weightRecord) {
-        WeightRecord savedWeightRecord = medicalRecordService.addWeightRecord(id, weightRecord);
-        return ResponseEntity.ok(savedWeightRecord);
+    // Weight Record operations
+    @PostMapping("/{medicalRecordId}/weight-records")
+    public ResponseEntity<WeightRecord> addWeightRecord(
+            @PathVariable Long medicalRecordId,
+            @RequestBody WeightRecord weightRecord) {
+        WeightRecord savedWeightRecord = medicalRecordService.addWeightRecord(medicalRecordId, weightRecord);
+        return new ResponseEntity<>(savedWeightRecord, HttpStatus.CREATED);
     }
 
-    @GetMapping("/{id}/weight-records")
-    public ResponseEntity<List<WeightRecord>> getWeightRecords(@PathVariable Long id) {
-        List<WeightRecord> weightRecords = medicalRecordService.getWeightRecords(id);
+    @GetMapping("/{medicalRecordId}/weight-records")
+    public ResponseEntity<List<WeightRecord>> getWeightRecords(@PathVariable Long medicalRecordId) {
+        List<WeightRecord> weightRecords = medicalRecordService.getWeightRecords(medicalRecordId);
         return ResponseEntity.ok(weightRecords);
     }
 
-    @GetMapping("/{id}/weight-records/latest")
-    public ResponseEntity<WeightRecord> getLatestWeight(@PathVariable Long id) {
-        Optional<WeightRecord> latestWeight = medicalRecordService.getLatestWeight(id);
-        return latestWeight.map(ResponseEntity::ok)
+    @GetMapping("/{medicalRecordId}/weight-records/latest")
+    public ResponseEntity<WeightRecord> getLatestWeightRecord(@PathVariable Long medicalRecordId) {
+        Optional<WeightRecord> latestWeightRecord = medicalRecordService.getLatestWeight(medicalRecordId);
+        return latestWeightRecord
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 }

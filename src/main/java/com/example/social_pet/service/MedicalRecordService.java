@@ -51,6 +51,7 @@ public class MedicalRecordService {
     public Vaccination addVaccination(Long medicalRecordId, Vaccination vaccination) {
         MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
         vaccination.setMedicalRecord(medicalRecord);
+        vaccination.setPet(medicalRecord.getPet());
         medicalRecord.getVaccinations().add(vaccination);
         medicalRecordRepository.save(medicalRecord);
         return vaccination;

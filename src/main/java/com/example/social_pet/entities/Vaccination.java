@@ -1,5 +1,6 @@
 package com.example.social_pet.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -10,13 +11,24 @@ public class Vaccination {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "vaccine_name")
     private String vaccineName;
+    
+    @Column(name = "vaccination_date")
     private LocalDate vaccinationDate;
+    
+    @Column(name = "veterinarian")
     private String veterinarian;
 
     @ManyToOne
     @JoinColumn(name = "medical_record_id", nullable = false)
+    @JsonBackReference
     private MedicalRecord medicalRecord;
+    
+    @ManyToOne
+    @JoinColumn(name = "pet_id", nullable = false)
+    @JsonBackReference
+    private Pet pet;
 
     public Vaccination() {}
 
@@ -65,5 +77,13 @@ public class Vaccination {
 
     public void setMedicalRecord(MedicalRecord medicalRecord) {
         this.medicalRecord = medicalRecord;
+    }
+    
+    public Pet getPet() {
+        return pet;
+    }
+
+    public void setPet(Pet pet) {
+        this.pet = pet;
     }
 }
