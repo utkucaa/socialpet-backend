@@ -2,7 +2,6 @@ package com.example.social_pet.service;
 
 import com.example.social_pet.dto.UserDTO;
 import com.example.social_pet.dto.UserStatsDTO;
-import com.example.social_pet.dto.UserCardDto;
 import com.example.social_pet.entities.User;
 import com.example.social_pet.repository.UserRepository;
 import com.example.social_pet.security.JwtTokenProvider;
@@ -10,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import java.util.Date;
 
 @Service
 public class UserService {
