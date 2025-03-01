@@ -1,9 +1,13 @@
 package com.example.social_pet.service;
 
-import com.example.social_pet.dto.PetDTO;
+import com.example.social_pet.dto.PetDto;
+import com.example.social_pet.dto.PetRequestDto;
+import com.example.social_pet.entities.Breed;
 import com.example.social_pet.entities.Pet;
-import com.example.social_pet.exception.ResourceNotFoundException;
+import com.example.social_pet.entities.User;
+import com.example.social_pet.repository.BreedRepository;
 import com.example.social_pet.repository.PetRepository;
+import com.example.social_pet.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,66 +17,92 @@ import java.util.stream.Collectors;
 @Service
 public class PetService {
 
+    private final PetRepository petRepository;
+    private final UserRepository userRepository;
+    private final BreedRepository breedRepository;
+
     @Autowired
-    private PetRepository petRepository;
-
-    // pet'i ID'sine göre getirme
-    public Pet getPetById(Long petId) {
-        return petRepository.findById(petId)
-                .orElseThrow(() -> new ResourceNotFoundException("Pet not found with id " + petId));
+    public PetService(PetRepository petRepository, UserRepository userRepository, BreedRepository breedRepository) {
+        this.petRepository = petRepository;
+        this.userRepository = userRepository;
+        this.breedRepository = breedRepository;
     }
 
-    // pet'i DTO formatında almak
-    public PetDTO getPetDetails(Long petId) {
-        Pet pet = getPetById(petId);
-
-        // pet detaylarını DTO'ya dönüştürüp döndürme
-        PetDTO petDTO = new PetDTO();
-        petDTO.setId(pet.getId());
-        petDTO.setName(pet.getName());
-        petDTO.setBreed(pet.getBreed().toString());
-        petDTO.setAge(pet.getAge());
-        petDTO.setOwnerId(pet.getOwner().getId()); // pet'in sahibinin ID'sini almak
-
-        return petDTO;
-    }
-
-    // yeni pet oluşturma
-    public Pet createPet(Pet newPet) {
-        // burada, yeni pet oluşturulmadan önce gerekli doğrulama veya iş kuralları eklenebilir
-        return petRepository.save(newPet);
-    }
-
-    // pet güncelleme
-    public Pet updatePet(Long petId, Pet updatedPet) {
-        Pet existingPet = getPetById(petId);
-
-        // pet bilgilerini güncelleme
-        existingPet.setName(updatedPet.getName());
-        existingPet.setBreed(updatedPet.getBreed());
-        existingPet.setAge(updatedPet.getAge());
-
-        // güncellenmiş pet'i kaydet
-        return petRepository.save(existingPet);
-    }
-
-    // pet silme
-    public void deletePet(Long petId) {
-        Pet pet = getPetById(petId);
-
-        // pet'i silme
-        petRepository.delete(pet);
-    }
-
-    // kullanıcının sahip olduğu tüm petleri listeleme
-    public List<PetDTO> getPetsByUserId(Long userId) {
-        List<Pet> pets = petRepository.findByOwnerId(userId);
-
-        return pets.stream()
-                .map(pet -> getPetDetails(pet.getId()))  // pet detaylarını DTO'ya dönüştürme
+    public List<PetDto> getAllPets() {
+        return petRepository.findAll().stream()
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
-    // aktif petleri listeleme
+    public PetDto getPetById(Long id) {
+        return petRepository.findById(id)
+                .map(this::convertToDto)
+                .orElse(null);
+    }
 
+    public List<PetDto> getPetsByOwnerId(Long ownerId) {
+        return petRepository.findByOwnerId(ownerId).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
+    }
+
+    public PetDto createPet(PetRequestDto petRequestDto) {
+        User owner = userRepository.findById(petRequestDto.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+        
+        Breed breed = breedRepository.findById(petRequestDto.getBreedId())
+                .orElseThrow(() -> new RuntimeException("Breed not found"));
+        
+        Pet pet = new Pet();
+        pet.setName(petRequestDto.getName());
+        pet.setAge(petRequestDto.getAge());
+        pet.setGender(petRequestDto.getGender());
+        pet.setAnimalType(petRequestDto.getAnimalType());
+        pet.setOwner(owner);
+        pet.setBreed(breed);
+        
+        Pet savedPet = petRepository.save(pet);
+        return convertToDto(savedPet);
+    }
+
+    public PetDto updatePet(Long id, PetRequestDto petRequestDto) {
+        Pet existingPet = petRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Pet not found"));
+        
+        User owner = userRepository.findById(petRequestDto.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("Owner not found"));
+        
+        Breed breed = breedRepository.findById(petRequestDto.getBreedId())
+                .orElseThrow(() -> new RuntimeException("Breed not found"));
+        
+        existingPet.setName(petRequestDto.getName());
+        existingPet.setAge(petRequestDto.getAge());
+        existingPet.setGender(petRequestDto.getGender());
+        existingPet.setAnimalType(petRequestDto.getAnimalType());
+        existingPet.setOwner(owner);
+        existingPet.setBreed(breed);
+        
+        Pet updatedPet = petRepository.save(existingPet);
+        return convertToDto(updatedPet);
+    }
+
+    public void deletePet(Long id) {
+        petRepository.deleteById(id);
+    }
+
+    private PetDto convertToDto(Pet pet) {
+        return PetDto.builder()
+                .id(pet.getId())
+                .name(pet.getName())
+                .age(pet.getAge())
+                .gender(pet.getGender())
+                .animalType(pet.getAnimalType())
+                .animalTypeName(pet.getAnimalType() != null ? pet.getAnimalType().getDisplayName() : null)
+                .ownerId(pet.getOwner().getId())
+                .ownerName(pet.getOwner().getUserName())
+                .breedId(pet.getBreed().getId())
+                .breedName(pet.getBreed().getName())
+                .isActive(pet.getIsActive())
+                .build();
+    }
 }

@@ -1,5 +1,6 @@
 package com.example.social_pet.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -17,6 +18,7 @@ public class Medication {
 
     @ManyToOne
     @JoinColumn(name = "medical_record_id", nullable = false)
+    @JsonBackReference
     private MedicalRecord medicalRecord;
 
     public Medication() {}
