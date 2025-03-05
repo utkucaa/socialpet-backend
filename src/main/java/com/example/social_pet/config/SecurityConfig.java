@@ -74,6 +74,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/files/**").permitAll()
                 .requestMatchers("/api/adoption/recent").permitAll()
                 .requestMatchers("/api/questions/**").permitAll()
+                .requestMatchers("/api/lostpets/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             );
