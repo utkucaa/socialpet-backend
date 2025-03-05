@@ -1,14 +1,15 @@
 package com.example.social_pet.controller;
 
 import com.example.social_pet.dto.MedicalRecordRequest;
+import com.example.social_pet.dto.VaccinationRequest;
 import com.example.social_pet.entities.*;
 import com.example.social_pet.service.MedicalRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,17 +51,45 @@ public class MedicalRecordController {
 
     // Vaccination operations
     @PostMapping("/{medicalRecordId}/vaccinations")
-    public ResponseEntity<Vaccination> addVaccination(
+    public ResponseEntity<?> addVaccination(
             @PathVariable Long medicalRecordId,
-            @RequestBody Vaccination vaccination) {
-        Vaccination savedVaccination = medicalRecordService.addVaccination(medicalRecordId, vaccination);
-        return new ResponseEntity<>(savedVaccination, HttpStatus.CREATED);
+            @RequestBody VaccinationRequest vaccinationRequest) {
+        try {
+            // String formatındaki tarihi LocalDate'e dönüştürüyoruz
+            LocalDate vaccinationDate = LocalDate.parse(vaccinationRequest.getVaccinationDate());
+            
+            // Vaccination nesnesini oluşturuyoruz
+            Vaccination vaccination = new Vaccination();
+            vaccination.setVaccineName(vaccinationRequest.getVaccineName());
+            vaccination.setVaccinationDate(vaccinationDate);
+            vaccination.setVeterinarian(vaccinationRequest.getVeterinarian());
+            
+            // Vaccination'ı ekliyoruz
+            Vaccination savedVaccination = medicalRecordService.addVaccination(medicalRecordId, vaccination);
+            return new ResponseEntity<>(savedVaccination, HttpStatus.CREATED);
+        } catch (DateTimeParseException e) {
+            // Tarih formatı hatalıysa
+            return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body("Invalid date format. Please use ISO format (YYYY-MM-DD): " + e.getMessage());
+        } catch (Exception e) {
+            // Diğer hatalar için
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to add vaccination: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{medicalRecordId}/vaccinations")
-    public ResponseEntity<List<Vaccination>> getVaccinations(@PathVariable Long medicalRecordId) {
-        List<Vaccination> vaccinations = medicalRecordService.getVaccinations(medicalRecordId);
-        return ResponseEntity.ok(vaccinations);
+    public ResponseEntity<?> getVaccinations(@PathVariable Long medicalRecordId) {
+        try {
+            List<Vaccination> vaccinations = medicalRecordService.getVaccinations(medicalRecordId);
+            return ResponseEntity.ok(vaccinations);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get vaccinations: " + e.getMessage());
+        }
     }
 
     // Treatment operations
@@ -73,9 +102,15 @@ public class MedicalRecordController {
     }
 
     @GetMapping("/{medicalRecordId}/treatments")
-    public ResponseEntity<List<Treatment>> getTreatments(@PathVariable Long medicalRecordId) {
-        List<Treatment> treatments = medicalRecordService.getTreatments(medicalRecordId);
-        return ResponseEntity.ok(treatments);
+    public ResponseEntity<?> getTreatments(@PathVariable Long medicalRecordId) {
+        try {
+            List<Treatment> treatments = medicalRecordService.getTreatments(medicalRecordId);
+            return ResponseEntity.ok(treatments);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get treatments: " + e.getMessage());
+        }
     }
 
     // Appointment operations
@@ -88,15 +123,27 @@ public class MedicalRecordController {
     }
 
     @GetMapping("/{medicalRecordId}/appointments")
-    public ResponseEntity<List<Appointment>> getAppointments(@PathVariable Long medicalRecordId) {
-        List<Appointment> appointments = medicalRecordService.getAppointments(medicalRecordId);
-        return ResponseEntity.ok(appointments);
+    public ResponseEntity<?> getAppointments(@PathVariable Long medicalRecordId) {
+        try {
+            List<Appointment> appointments = medicalRecordService.getAppointments(medicalRecordId);
+            return ResponseEntity.ok(appointments);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get appointments: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{medicalRecordId}/appointments/upcoming")
-    public ResponseEntity<List<Appointment>> getUpcomingAppointments(@PathVariable Long medicalRecordId) {
-        List<Appointment> upcomingAppointments = medicalRecordService.getUpcomingAppointments(medicalRecordId);
-        return ResponseEntity.ok(upcomingAppointments);
+    public ResponseEntity<?> getUpcomingAppointments(@PathVariable Long medicalRecordId) {
+        try {
+            List<Appointment> appointments = medicalRecordService.getUpcomingAppointments(medicalRecordId);
+            return ResponseEntity.ok(appointments);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get upcoming appointments: " + e.getMessage());
+        }
     }
 
     // Medication operations
@@ -109,15 +156,27 @@ public class MedicalRecordController {
     }
 
     @GetMapping("/{medicalRecordId}/medications")
-    public ResponseEntity<List<Medication>> getMedications(@PathVariable Long medicalRecordId) {
-        List<Medication> medications = medicalRecordService.getMedications(medicalRecordId);
-        return ResponseEntity.ok(medications);
+    public ResponseEntity<?> getMedications(@PathVariable Long medicalRecordId) {
+        try {
+            List<Medication> medications = medicalRecordService.getMedications(medicalRecordId);
+            return ResponseEntity.ok(medications);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get medications: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{medicalRecordId}/medications/current")
-    public ResponseEntity<List<Medication>> getCurrentMedications(@PathVariable Long medicalRecordId) {
-        List<Medication> currentMedications = medicalRecordService.getCurrentMedications(medicalRecordId);
-        return ResponseEntity.ok(currentMedications);
+    public ResponseEntity<?> getCurrentMedications(@PathVariable Long medicalRecordId) {
+        try {
+            List<Medication> medications = medicalRecordService.getCurrentMedications(medicalRecordId);
+            return ResponseEntity.ok(medications);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get current medications: " + e.getMessage());
+        }
     }
 
     // Allergy operations
@@ -130,9 +189,15 @@ public class MedicalRecordController {
     }
 
     @GetMapping("/{medicalRecordId}/allergies")
-    public ResponseEntity<List<Allergy>> getAllergies(@PathVariable Long medicalRecordId) {
-        List<Allergy> allergies = medicalRecordService.getAllergies(medicalRecordId);
-        return ResponseEntity.ok(allergies);
+    public ResponseEntity<?> getAllergies(@PathVariable Long medicalRecordId) {
+        try {
+            List<Allergy> allergies = medicalRecordService.getAllergies(medicalRecordId);
+            return ResponseEntity.ok(allergies);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get allergies: " + e.getMessage());
+        }
     }
 
     // Weight Record operations
@@ -145,16 +210,27 @@ public class MedicalRecordController {
     }
 
     @GetMapping("/{medicalRecordId}/weight-records")
-    public ResponseEntity<List<WeightRecord>> getWeightRecords(@PathVariable Long medicalRecordId) {
-        List<WeightRecord> weightRecords = medicalRecordService.getWeightRecords(medicalRecordId);
-        return ResponseEntity.ok(weightRecords);
+    public ResponseEntity<?> getWeightRecords(@PathVariable Long medicalRecordId) {
+        try {
+            List<WeightRecord> weightRecords = medicalRecordService.getWeightRecords(medicalRecordId);
+            return ResponseEntity.ok(weightRecords);
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get weight records: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{medicalRecordId}/weight-records/latest")
-    public ResponseEntity<WeightRecord> getLatestWeightRecord(@PathVariable Long medicalRecordId) {
-        Optional<WeightRecord> latestWeightRecord = medicalRecordService.getLatestWeight(medicalRecordId);
-        return latestWeightRecord
-                .map(ResponseEntity::ok)
+    public ResponseEntity<?> getLatestWeightRecord(@PathVariable Long medicalRecordId) {
+        try {
+            Optional<WeightRecord> weightRecord = medicalRecordService.getLatestWeight(medicalRecordId);
+            return weightRecord.map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Failed to get latest weight record: " + e.getMessage());
+        }
     }
 }

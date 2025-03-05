@@ -1,6 +1,6 @@
 package com.example.social_pet.entities;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -22,12 +22,12 @@ public class Vaccination {
 
     @ManyToOne
     @JoinColumn(name = "medical_record_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnoreProperties({"vaccinations", "treatments", "appointments", "medications", "allergies", "weightRecords"})
     private MedicalRecord medicalRecord;
     
     @ManyToOne
     @JoinColumn(name = "pet_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnoreProperties({"vaccinations", "medicalRecords", "breedPredictions"})
     private Pet pet;
 
     public Vaccination() {}
