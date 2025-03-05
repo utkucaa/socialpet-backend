@@ -75,6 +75,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/adoption/recent").permitAll()
                 .requestMatchers("/api/questions/**").permitAll()
                 .requestMatchers("/api/lostpets/**").permitAll()
+                .requestMatchers("/api/medical-records/**").permitAll()
+                .requestMatchers("/api/pets/**").permitAll()
+                .requestMatchers("/api/breeds/**").permitAll()
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
             );
