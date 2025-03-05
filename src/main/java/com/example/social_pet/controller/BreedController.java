@@ -50,6 +50,26 @@ public class BreedController {
         }
     }
     
+    /**
+     * Get breeds by animal type using query parameter
+     * Example: GET /api/breeds?animalType=DOG
+     */
+    @GetMapping(params = "animalType")
+    public ResponseEntity<?> getBreedsByAnimalTypeParam(@RequestParam String animalType) {
+        try {
+            AnimalType type = AnimalType.valueOf(animalType.toUpperCase());
+            return ResponseEntity.ok(breedService.getBreedsByAnimalType(type));
+        } catch (IllegalArgumentException e) {
+            Map<String, String> errorResponse = Map.of(
+                "error", "Invalid animal type: " + animalType,
+                "validTypes", Arrays.stream(AnimalType.values())
+                    .map(Enum::name)
+                    .collect(Collectors.joining(", "))
+            );
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+    
     @GetMapping("/animal-types")
     public ResponseEntity<List<Map<String, String>>> getAllAnimalTypes() {
         List<Map<String, String>> animalTypes = Arrays.stream(AnimalType.values())
