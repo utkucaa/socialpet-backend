@@ -13,6 +13,8 @@ public class WeightRecord {
 
     private LocalDate recordDate;
     private double weight;
+    private String unit;
+    private String notes;
 
     @ManyToOne
     @JoinColumn(name = "medical_record_id", nullable = false)
@@ -21,10 +23,12 @@ public class WeightRecord {
 
     public WeightRecord() {}
 
-    public WeightRecord(Long id, LocalDate recordDate, double weight) {
+    public WeightRecord(Long id, LocalDate recordDate, double weight, String unit, String notes) {
         this.id = id;
         this.recordDate = recordDate;
         this.weight = weight;
+        this.unit = unit;
+        this.notes = notes;
     }
 
     public Long getId() {
@@ -49,6 +53,22 @@ public class WeightRecord {
 
     public void setWeight(double weight) {
         this.weight = weight;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public MedicalRecord getMedicalRecord() {
