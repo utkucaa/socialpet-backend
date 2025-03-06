@@ -12,6 +12,8 @@ public class Allergy {
 
     private String allergen;
     private String reaction;
+    private String severity;
+    private String notes;
 
     @ManyToOne
     @JoinColumn(name = "medical_record_id", nullable = false)
@@ -20,10 +22,12 @@ public class Allergy {
 
     public Allergy() {}
 
-    public Allergy(Long id, String allergen, String reaction) {
+    public Allergy(Long id, String allergen, String reaction, String severity, String notes) {
         this.id = id;
         this.allergen = allergen;
         this.reaction = reaction;
+        this.severity = severity;
+        this.notes = notes;
     }
 
     public Long getId() {
@@ -48,6 +52,22 @@ public class Allergy {
 
     public void setReaction(String reaction) {
         this.reaction = reaction;
+    }
+    
+    public String getSeverity() {
+        return severity;
+    }
+    
+    public void setSeverity(String severity) {
+        this.severity = severity;
+    }
+    
+    public String getNotes() {
+        return notes;
+    }
+    
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public MedicalRecord getMedicalRecord() {
