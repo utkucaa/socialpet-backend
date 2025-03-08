@@ -1,237 +1,430 @@
 package com.example.social_pet.service;
 
 import com.example.social_pet.entities.*;
-import com.example.social_pet.repository.MedicalRecordRepository;
-import com.example.social_pet.repository.PetRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.example.social_pet.repository.*;
+import com.example.social_pet.dto.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.Comparator;
 
 @Service
-@Transactional
 public class MedicalRecordService {
 
-    private final MedicalRecordRepository medicalRecordRepository;
-    private final PetRepository petRepository;
-
     @Autowired
-    public MedicalRecordService(MedicalRecordRepository medicalRecordRepository, PetRepository petRepository) {
-        this.medicalRecordRepository = medicalRecordRepository;
-        this.petRepository = petRepository;
-    }
+    private TreatmentRepository treatmentRepository;
+    
+    @Autowired
+    private VaccinationRepository vaccinationRepository;
+    
+    @Autowired
+    private AllergyRepository allergyRepository;
+    
+    @Autowired
+    private AppointmentRepository appointmentRepository;
+    
+    @Autowired
+    private WeightRecordRepository weightRecordRepository;
+    
+    @Autowired
+    private MedicationRepository medicationRepository;
+    
+    @Autowired
+    private PetRepository petRepository;
 
-    // Medical Record CRUD operations
-    public MedicalRecord createMedicalRecord(Long petId) {
+    // Get all medical records for a pet
+    public Map<String, Object> getAllMedicalRecords(Long petId) {
+        Map<String, Object> allRecords = new HashMap<>();
+        
         Pet pet = petRepository.findById(petId)
-                .orElseThrow(() -> new EntityNotFoundException("Pet not found with id: " + petId));
-
-        MedicalRecord medicalRecord = new MedicalRecord();
-        medicalRecord.setPet(pet);
-        return medicalRecordRepository.save(medicalRecord);
-    }
-
-    public MedicalRecord getMedicalRecord(Long id) {
-        return medicalRecordRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Medical record not found with id: " + id));
-    }
-
-    public List<MedicalRecord> getMedicalRecordsByPetId(Long petId) {
-        return medicalRecordRepository.findByPetId(petId);
-    }
-
-    public void deleteMedicalRecord(Long id) {
-        medicalRecordRepository.deleteById(id);
-    }
-
-    // Vaccination operations
-    public Vaccination addVaccination(Long medicalRecordId, Vaccination vaccination) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        vaccination.setMedicalRecord(medicalRecord);
-        vaccination.setPet(medicalRecord.getPet());
+                .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
+                
+        allRecords.put("treatments", treatmentRepository.findByPetId(petId));
+        allRecords.put("vaccinations", vaccinationRepository.findByPetId(petId));
+        allRecords.put("allergies", allergyRepository.findByPetId(petId));
+        allRecords.put("appointments", appointmentRepository.findByPetId(petId));
+        allRecords.put("weightRecords", weightRecordRepository.findByPetId(petId));
+        allRecords.put("medications", medicationRepository.findByPetId(petId));
         
-        if (medicalRecord.getVaccinations() == null) {
-            medicalRecord.setVaccinations(new ArrayList<>());
+        return allRecords;
+    }
+    
+    // Treatment methods
+    public List<Treatment> getTreatments(Long petId) {
+        return treatmentRepository.findByPetId(petId);
+    }
+    
+    public Treatment getTreatment(Long id) {
+        return treatmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Treatment not found with id: " + id));
+    }
+    
+    @Transactional
+    public Treatment addTreatment(Long petId, TreatmentRequest request) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
+        
+        Treatment treatment = new Treatment();
+        treatment.setPet(pet);
+        
+        // Use treatmentType from request, or fallback to treatmentName if available
+        if (request.getTreatmentType() != null) {
+            treatment.setTreatmentType(request.getTreatmentType());
+        } else if (request.getTreatmentName() != null) {
+            treatment.setTreatmentType(request.getTreatmentName());
         }
         
-        medicalRecord.getVaccinations().add(vaccination);
-        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
+        treatment.setDescription(request.getDescription() != null ? 
+                request.getDescription() : request.getNotes());
         
-        // Kaydedilen aşıyı bul ve döndür
-        return savedRecord.getVaccinations()
-            .stream()
-            .filter(v -> v.getVaccineName().equals(vaccination.getVaccineName()) && 
-                   v.getVaccinationDate().equals(vaccination.getVaccinationDate()))
-            .findFirst()
-            .orElse(vaccination);
-    }
-
-    public List<Vaccination> getVaccinations(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        return medicalRecord.getVaccinations();
-    }
-
-    // Treatment operations
-    public Treatment addTreatment(Long medicalRecordId, Treatment treatment) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        treatment.setMedicalRecord(medicalRecord);
-        
-        if (medicalRecord.getTreatments() == null) {
-            medicalRecord.setTreatments(new ArrayList<>());
+        if (request.getTreatmentDate() != null) {
+            treatment.setTreatmentDate(LocalDate.parse(request.getTreatmentDate(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         
-        medicalRecord.getTreatments().add(treatment);
-        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
+        treatment.setVeterinarian(request.getVeterinarian());
         
-        // Kaydedilen tedaviyi bul ve döndür
-        return savedRecord.getTreatments()
-            .stream()
-            .filter(t -> t.getTreatmentType().equals(treatment.getTreatmentType()) && 
-                   t.getTreatmentDate().equals(treatment.getTreatmentDate()))
-            .findFirst()
-            .orElse(treatment);
+        return treatmentRepository.save(treatment);
     }
-
-    public List<Treatment> getTreatments(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        return medicalRecord.getTreatments();
-    }
-
-    // Appointment operations
-    public Appointment addAppointment(Long medicalRecordId, Appointment appointment) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        appointment.setMedicalRecord(medicalRecord);
+    
+    @Transactional
+    public Treatment updateTreatment(Long id, TreatmentRequest request) {
+        Treatment treatment = treatmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Treatment not found with id: " + id));
         
-        if (medicalRecord.getAppointments() == null) {
-            medicalRecord.setAppointments(new ArrayList<>());
+        // Use treatmentType from request, or fallback to treatmentName if available
+        if (request.getTreatmentType() != null) {
+            treatment.setTreatmentType(request.getTreatmentType());
+        } else if (request.getTreatmentName() != null) {
+            treatment.setTreatmentType(request.getTreatmentName());
         }
         
-        medicalRecord.getAppointments().add(appointment);
-        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
-        
-        // Kaydedilen randevuyu bul ve döndür
-        return savedRecord.getAppointments()
-            .stream()
-            .filter(a -> a.getAppointmentDate().equals(appointment.getAppointmentDate()) && 
-                   a.getReason().equals(appointment.getReason()))
-            .findFirst()
-            .orElse(appointment);
-    }
-
-    public List<Appointment> getAppointments(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        return medicalRecord.getAppointments();
-    }
-
-    public List<Appointment> getUpcomingAppointments(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        LocalDate today = LocalDate.now();
-        
-        return medicalRecord.getAppointments().stream()
-                .filter(appointment -> appointment.getAppointmentDate().isAfter(today) || 
-                                      appointment.getAppointmentDate().isEqual(today))
-                .collect(Collectors.toList());
-    }
-
-    // Medication operations
-    public Medication addMedication(Long medicalRecordId, Medication medication) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        medication.setMedicalRecord(medicalRecord);
-        
-        if (medicalRecord.getMedications() == null) {
-            medicalRecord.setMedications(new ArrayList<>());
+        if (request.getDescription() != null) {
+            treatment.setDescription(request.getDescription());
+        } else if (request.getNotes() != null) {
+            treatment.setDescription(request.getNotes());
         }
         
-        medicalRecord.getMedications().add(medication);
-        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
-        
-        // Kaydedilen ilacı bul ve döndür
-        return savedRecord.getMedications()
-            .stream()
-            .filter(m -> m.getMedicationName().equals(medication.getMedicationName()) && 
-                   m.getStartDate().equals(medication.getStartDate()))
-            .findFirst()
-            .orElse(medication);
-    }
-
-    public List<Medication> getMedications(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        return medicalRecord.getMedications();
-    }
-
-    public List<Medication> getCurrentMedications(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        LocalDate today = LocalDate.now();
-        
-        return medicalRecord.getMedications().stream()
-                .filter(medication -> medication.getEndDate().isAfter(today) || 
-                                     medication.getEndDate().isEqual(today))
-                .collect(Collectors.toList());
-    }
-
-    // Allergy operations
-    public Allergy addAllergy(Long medicalRecordId, Allergy allergy) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        allergy.setMedicalRecord(medicalRecord);
-        
-        if (medicalRecord.getAllergies() == null) {
-            medicalRecord.setAllergies(new ArrayList<>());
+        if (request.getTreatmentDate() != null) {
+            treatment.setTreatmentDate(LocalDate.parse(request.getTreatmentDate(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
         }
         
-        medicalRecord.getAllergies().add(allergy);
-        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
-        
-        // Kaydedilen alerjiyi bul ve döndür
-        return savedRecord.getAllergies()
-            .stream()
-            .filter(a -> a.getAllergen().equals(allergy.getAllergen()))
-            .findFirst()
-            .orElse(allergy);
-    }
-
-    public List<Allergy> getAllergies(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        return medicalRecord.getAllergies();
-    }
-
-    // Weight Record operations
-    public WeightRecord addWeightRecord(Long medicalRecordId, WeightRecord weightRecord) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        weightRecord.setMedicalRecord(medicalRecord);
-        
-        if (medicalRecord.getWeightRecords() == null) {
-            medicalRecord.setWeightRecords(new ArrayList<>());
+        if (request.getVeterinarian() != null) {
+            treatment.setVeterinarian(request.getVeterinarian());
         }
         
-        medicalRecord.getWeightRecords().add(weightRecord);
-        MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
+        return treatmentRepository.save(treatment);
+    }
+    
+    public void deleteTreatment(Long id) {
+        Treatment treatment = treatmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Treatment not found with id: " + id));
+        treatmentRepository.delete(treatment);
+    }
+    
+    // Vaccination methods
+    public List<Vaccination> getVaccinations(Long petId) {
+        return vaccinationRepository.findByPetId(petId);
+    }
+    
+    public Vaccination getVaccination(Long id) {
+        return vaccinationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vaccination not found with id: " + id));
+    }
+    
+    @Transactional
+    public Vaccination addVaccination(Long petId, VaccinationRequest request) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
         
-        // Kaydedilen kilo kaydını bul ve döndür
-        return savedRecord.getWeightRecords()
-            .stream()
-            .filter(w -> w.getRecordDate().equals(weightRecord.getRecordDate()) && 
-                   Math.abs(w.getWeight() - weightRecord.getWeight()) < 0.001)
-            .findFirst()
-            .orElse(weightRecord);
-    }
-
-    public List<WeightRecord> getWeightRecords(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
-        return medicalRecord.getWeightRecords();
-    }
-
-    public Optional<WeightRecord> getLatestWeight(Long medicalRecordId) {
-        MedicalRecord medicalRecord = getMedicalRecord(medicalRecordId);
+        Vaccination vaccination = new Vaccination();
+        vaccination.setPet(pet);
+        vaccination.setVaccineName(request.getVaccineName());
         
-        return medicalRecord.getWeightRecords().stream()
-                .sorted((w1, w2) -> w2.getRecordDate().compareTo(w1.getRecordDate()))
-                .findFirst();
+        if (request.getVaccinationDate() != null) {
+            vaccination.setVaccinationDate(LocalDate.parse(request.getVaccinationDate(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        vaccination.setVeterinarian(request.getVeterinarian());
+        
+        return vaccinationRepository.save(vaccination);
     }
-}
+    
+    @Transactional
+    public Vaccination updateVaccination(Long id, VaccinationRequest request) {
+        Vaccination vaccination = vaccinationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vaccination not found with id: " + id));
+        
+        if (request.getVaccineName() != null) {
+            vaccination.setVaccineName(request.getVaccineName());
+        }
+        
+        if (request.getVaccinationDate() != null) {
+            vaccination.setVaccinationDate(LocalDate.parse(request.getVaccinationDate(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        if (request.getVeterinarian() != null) {
+            vaccination.setVeterinarian(request.getVeterinarian());
+        }
+        
+        return vaccinationRepository.save(vaccination);
+    }
+    
+    public void deleteVaccination(Long id) {
+        Vaccination vaccination = vaccinationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Vaccination not found with id: " + id));
+        vaccinationRepository.delete(vaccination);
+    }
+    
+    // Allergy methods
+    public List<Allergy> getAllergies(Long petId) {
+        return allergyRepository.findByPetId(petId);
+    }
+    
+    public Allergy getAllergy(Long id) {
+        return allergyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Allergy not found with id: " + id));
+    }
+    
+    @Transactional
+    public Allergy addAllergy(Long petId, AllergyRequest request) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
+        
+        Allergy allergy = new Allergy();
+        allergy.setPet(pet);
+        allergy.setAllergen(request.getAllergen());
+        allergy.setReaction(request.getReaction());
+        allergy.setSeverity(request.getSeverity());
+        allergy.setNotes(request.getNotes());
+        
+        return allergyRepository.save(allergy);
+    }
+    
+    @Transactional
+    public Allergy updateAllergy(Long id, AllergyRequest request) {
+        Allergy allergy = allergyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Allergy not found with id: " + id));
+        
+        if (request.getAllergen() != null) {
+            allergy.setAllergen(request.getAllergen());
+        }
+        
+        if (request.getReaction() != null) {
+            allergy.setReaction(request.getReaction());
+        }
+        
+        if (request.getSeverity() != null) {
+            allergy.setSeverity(request.getSeverity());
+        }
+        
+        if (request.getNotes() != null) {
+            allergy.setNotes(request.getNotes());
+        }
+        
+        return allergyRepository.save(allergy);
+    }
+    
+    public void deleteAllergy(Long id) {
+        Allergy allergy = allergyRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Allergy not found with id: " + id));
+        allergyRepository.delete(allergy);
+    }
+    
+    // Appointment methods
+    public List<Appointment> getAppointments(Long petId) {
+        return appointmentRepository.findByPetId(petId);
+    }
+    
+    public Appointment getAppointment(Long id) {
+        return appointmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
+    }
+    
+    @Transactional
+    public Appointment addAppointment(Long petId, AppointmentRequest request) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
+        
+        Appointment appointment = new Appointment();
+        appointment.setPet(pet);
+        
+        if (request.getAppointmentDate() != null) {
+            appointment.setAppointmentDate(LocalDateTime.parse(request.getAppointmentDate()));
+        }
+        
+        appointment.setVeterinarian(request.getVeterinarian());
+        appointment.setReason(request.getReason());
+        
+        return appointmentRepository.save(appointment);
+    }
+    
+    @Transactional
+    public Appointment updateAppointment(Long id, AppointmentRequest request) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
+        
+        if (request.getAppointmentDate() != null) {
+            appointment.setAppointmentDate(LocalDateTime.parse(request.getAppointmentDate()));
+        }
+        
+        if (request.getVeterinarian() != null) {
+            appointment.setVeterinarian(request.getVeterinarian());
+        }
+        
+        if (request.getReason() != null) {
+            appointment.setReason(request.getReason());
+        }
+        
+        return appointmentRepository.save(appointment);
+    }
+    
+    public void deleteAppointment(Long id) {
+        Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Appointment not found with id: " + id));
+        appointmentRepository.delete(appointment);
+    }
+    
+    // WeightRecord methods
+    public List<WeightRecord> getWeightRecords(Long petId) {
+        return weightRecordRepository.findByPetId(petId);
+    }
+    
+    public WeightRecord getWeightRecord(Long id) {
+        return weightRecordRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("WeightRecord not found with id: " + id));
+    }
+    
+    @Transactional
+    public WeightRecord addWeightRecord(Long petId, WeightRecordRequest request) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
+        
+        WeightRecord weightRecord = new WeightRecord();
+        weightRecord.setPet(pet);
+        
+        String dateString = request.getRecordDate() != null ? 
+                request.getRecordDate() : request.getDate();
+        
+        if (dateString != null) {
+            weightRecord.setRecordDate(LocalDate.parse(dateString, 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        weightRecord.setWeight(request.getWeight());
+        weightRecord.setUnit(request.getUnit());
+        weightRecord.setNotes(request.getNotes());
+        
+        return weightRecordRepository.save(weightRecord);
+    }
+    
+    @Transactional
+    public WeightRecord updateWeightRecord(Long id, WeightRecordRequest request) {
+        WeightRecord weightRecord = weightRecordRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("WeightRecord not found with id: " + id));
+        
+        String dateString = request.getRecordDate() != null ? 
+                request.getRecordDate() : request.getDate();
+        
+        if (dateString != null) {
+            weightRecord.setRecordDate(LocalDate.parse(dateString, 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        if (request.getWeight() != null) {
+            weightRecord.setWeight(request.getWeight());
+        }
+        
+        if (request.getUnit() != null) {
+            weightRecord.setUnit(request.getUnit());
+        }
+        
+        if (request.getNotes() != null) {
+            weightRecord.setNotes(request.getNotes());
+        }
+        
+        return weightRecordRepository.save(weightRecord);
+    }
+    
+    public void deleteWeightRecord(Long id) {
+        WeightRecord weightRecord = weightRecordRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Weight record not found with id: " + id));
+        weightRecordRepository.delete(weightRecord);
+    }
+    
+    // Medication methods
+    public List<Medication> getMedications(Long petId) {
+        return medicationRepository.findByPetId(petId);
+    }
+    
+    public Medication getMedication(Long id) {
+        return medicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Medication not found with id: " + id));
+    }
+    
+    @Transactional
+    public Medication addMedication(Long petId, MedicationRequest request) {
+        Pet pet = petRepository.findById(petId)
+                .orElseThrow(() -> new RuntimeException("Pet not found with id: " + petId));
+        
+        Medication medication = new Medication();
+        medication.setPet(pet);
+        medication.setMedicationName(request.getMedicationName());
+        medication.setDosage(request.getDosage());
+        
+        if (request.getStartDate() != null) {
+            medication.setStartDate(LocalDate.parse(request.getStartDate(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        if (request.getEndDate() != null) {
+            medication.setEndDate(LocalDate.parse(request.getEndDate(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        return medicationRepository.save(medication);
+    }
+    
+    @Transactional
+    public Medication updateMedication(Long id, MedicationRequest request) {
+        Medication medication = medicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Medication not found with id: " + id));
+        
+        if (request.getMedicationName() != null) {
+            medication.setMedicationName(request.getMedicationName());
+        }
+        
+        if (request.getDosage() != null) {
+            medication.setDosage(request.getDosage());
+        }
+        
+        if (request.getStartDate() != null) {
+            medication.setStartDate(LocalDate.parse(request.getStartDate(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        if (request.getEndDate() != null) {
+            medication.setEndDate(LocalDate.parse(request.getEndDate(), 
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        }
+        
+        return medicationRepository.save(medication);
+    }
+    
+    public void deleteMedication(Long id) {
+        Medication medication = medicationRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Medication not found with id: " + id));
+        medicationRepository.delete(medication);
+    }
+} 

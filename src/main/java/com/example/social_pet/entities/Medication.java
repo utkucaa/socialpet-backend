@@ -15,12 +15,12 @@ public class Medication {
     private String dosage;
     private LocalDate startDate;
     private LocalDate endDate;
-
+    
     @ManyToOne
-    @JoinColumn(name = "medical_record_id", nullable = false)
+    @JoinColumn(name = "pet_id")
     @JsonBackReference
-    private MedicalRecord medicalRecord;
-
+    private Pet pet;
+    
     public Medication() {}
 
     public Medication(Long id, String medicationName, String dosage, LocalDate startDate, LocalDate endDate) {
@@ -70,12 +70,12 @@ public class Medication {
     public void setEndDate(LocalDate endDate) {
         this.endDate = endDate;
     }
-
-    public MedicalRecord getMedicalRecord() {
-        return medicalRecord;
+    
+    public Pet getPet() {
+        return pet;
     }
 
-    public void setMedicalRecord(MedicalRecord medicalRecord) {
-        this.medicalRecord = medicalRecord;
+    public void setPet(Pet pet) {
+        this.pet = pet;
     }
 }

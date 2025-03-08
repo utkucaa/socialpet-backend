@@ -45,14 +45,29 @@ public class Pet {
 
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<VaccinationRecord> vaccinations = new ArrayList<>();
-
-    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("pet")
-    private List<MedicalRecord> medicalRecords = new ArrayList<>();
-
+    private List<BreedPrediction> breedPredictions = new ArrayList<>();
+    
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
     @JsonManagedReference
-    private List<BreedPrediction> breedPredictions = new ArrayList<>();
-
+    private List<Treatment> treatments = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Vaccination> vaccinations = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Allergy> allergies = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Appointment> appointments = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<WeightRecord> weightRecords = new ArrayList<>();
+    
+    @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
+    @JsonManagedReference
+    private List<Medication> medications = new ArrayList<>();
 }

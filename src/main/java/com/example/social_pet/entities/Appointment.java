@@ -1,8 +1,9 @@
 package com.example.social_pet.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "appointments")
@@ -11,18 +12,18 @@ public class Appointment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private LocalDate appointmentDate;
+    private LocalDateTime appointmentDate;
     private String veterinarian;
     private String reason;
 
     @ManyToOne
-    @JoinColumn(name = "medical_record_id", nullable = false)
-    @JsonBackReference
-    private MedicalRecord medicalRecord;
+    @JoinColumn(name = "pet_id", nullable = false)
+    @JsonIgnore
+    private Pet pet;
 
     public Appointment() {}
 
-    public Appointment(Long id, LocalDate appointmentDate, String veterinarian, String reason) {
+    public Appointment(Long id, LocalDateTime appointmentDate, String veterinarian, String reason) {
         this.id = id;
         this.appointmentDate = appointmentDate;
         this.veterinarian = veterinarian;
@@ -37,11 +38,11 @@ public class Appointment {
         this.id = id;
     }
 
-    public LocalDate getAppointmentDate() {
+    public LocalDateTime getAppointmentDate() {
         return appointmentDate;
     }
 
-    public void setAppointmentDate(LocalDate appointmentDate) {
+    public void setAppointmentDate(LocalDateTime appointmentDate) {
         this.appointmentDate = appointmentDate;
     }
 
@@ -60,12 +61,12 @@ public class Appointment {
     public void setReason(String reason) {
         this.reason = reason;
     }
-
-    public MedicalRecord getMedicalRecord() {
-        return medicalRecord;
+    
+    public Pet getPet() {
+        return pet;
     }
-
-    public void setMedicalRecord(MedicalRecord medicalRecord) {
-        this.medicalRecord = medicalRecord;
+    
+    public void setPet(Pet pet) {
+        this.pet = pet;
     }
 }
