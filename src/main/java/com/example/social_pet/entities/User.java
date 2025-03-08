@@ -29,6 +29,10 @@ public class User {
     private String phoneNumber;
     private String avatarUrl;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private Role role = Role.MEMBER; // Default role is MEMBER
+
     @JsonIgnore
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)
     private List<Pet> pets = new ArrayList<>();
@@ -53,9 +57,22 @@ public class User {
     @PrePersist
     public void onCreate() {
         this.joinDate = new Date();
-
     }
 
+    // Role related methods
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public boolean isAdmin() {
+        return role == Role.ADMIN;
+    }
+
+    // Existing methods...
     public String getUserName() {
         return userName;
     }

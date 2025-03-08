@@ -1,15 +1,7 @@
-package com.example.social_pet.entities;
+package com.example.social_pet.dto;
 
-import jakarta.persistence.*;
-
-@Entity
-@Table(name = "donation_organizations")
-public class DonationOrganization {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+public class DonationOrganizationDTO {
     private Long id;
-
     private String name;
     private String address;
     private String phoneNumber;
@@ -55,4 +47,4 @@ public class DonationOrganization {
     public void setIban(String iban) {
         this.Iban = iban;
     }
-}
+} 

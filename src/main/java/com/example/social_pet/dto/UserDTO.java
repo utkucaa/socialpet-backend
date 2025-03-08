@@ -1,6 +1,7 @@
 package com.example.social_pet.dto;
 
 
+import com.example.social_pet.entities.Role;
 import java.util.Date;
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class UserDTO {
     private String confirmPassword;
     private String phoneNumber;
     private Date joinDate;
+    private Role role;
     private List<Long> petIds;
     private List<Long> questionIds;
     private List<Long> answerIds;
@@ -124,6 +126,14 @@ public class UserDTO {
 
     public void setConfirmPassword(String confirmPassword) {
         this.confirmPassword = confirmPassword;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }
 
