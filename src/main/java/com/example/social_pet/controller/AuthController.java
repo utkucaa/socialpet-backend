@@ -67,7 +67,7 @@ public class AuthController {
             logger.info("Login successful for user: {}", loginRequest.getEmail());
             return ResponseEntity.ok(new JwtAuthResponse(jwt, user.getId(), user.getEmail(), 
                 user.getJoinDate() != null ? LocalDateTime.ofInstant(user.getJoinDate().toInstant(), ZoneId.systemDefault()) : null,
-                user.getUserName(), user.getFirstName(), user.getLastName(), user.getAvatarUrl()));
+                user.getUserName(), user.getFirstName(), user.getLastName(), user.getAvatarUrl(), user.getRole()));
 
         } catch (BadCredentialsException e) {
             logger.error("Invalid credentials for user: {}", loginRequest.getEmail());
@@ -107,7 +107,7 @@ public class AuthController {
             logger.info("Registration successful for user: {}", userDTO.getEmail());
             return ResponseEntity.ok(new JwtAuthResponse(jwt, user.getId(), user.getEmail(),
                 user.getJoinDate() != null ? LocalDateTime.ofInstant(user.getJoinDate().toInstant(), ZoneId.systemDefault()) : null,
-                user.getUserName(), user.getFirstName(), user.getLastName(), user.getAvatarUrl()));
+                user.getUserName(), user.getFirstName(), user.getLastName(), user.getAvatarUrl(), user.getRole()));
 
         } catch (Exception e) {
             logger.error("Registration error for user: {}", userDTO.getEmail(), e);
