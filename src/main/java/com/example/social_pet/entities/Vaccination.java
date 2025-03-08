@@ -1,6 +1,8 @@
 package com.example.social_pet.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -19,15 +21,10 @@ public class Vaccination {
     
     @Column(name = "veterinarian")
     private String veterinarian;
-
-    @ManyToOne
-    @JoinColumn(name = "medical_record_id", nullable = false)
-    @JsonIgnoreProperties({"vaccinations", "treatments", "appointments", "medications", "allergies", "weightRecords"})
-    private MedicalRecord medicalRecord;
     
     @ManyToOne
     @JoinColumn(name = "pet_id", nullable = false)
-    @JsonIgnoreProperties({"vaccinations", "medicalRecords", "breedPredictions"})
+    @JsonIgnore
     private Pet pet;
 
     public Vaccination() {}
@@ -71,13 +68,6 @@ public class Vaccination {
         this.veterinarian = veterinarian;
     }
 
-    public MedicalRecord getMedicalRecord() {
-        return medicalRecord;
-    }
-
-    public void setMedicalRecord(MedicalRecord medicalRecord) {
-        this.medicalRecord = medicalRecord;
-    }
     
     public Pet getPet() {
         return pet;

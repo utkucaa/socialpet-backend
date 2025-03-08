@@ -1,6 +1,7 @@
 package com.example.social_pet.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -17,9 +18,9 @@ public class Treatment {
     private String veterinarian;
 
     @ManyToOne
-    @JoinColumn(name = "medical_record_id", nullable = false)
-    @JsonBackReference
-    private MedicalRecord medicalRecord;
+    @JoinColumn(name = "pet_id", nullable = false)
+    @JsonIgnore
+    private Pet pet;
 
     public Treatment() {}
 
@@ -70,12 +71,12 @@ public class Treatment {
     public void setVeterinarian(String veterinarian) {
         this.veterinarian = veterinarian;
     }
-
-    public MedicalRecord getMedicalRecord() {
-        return medicalRecord;
+    
+    public Pet getPet() {
+        return pet;
     }
 
-    public void setMedicalRecord(MedicalRecord medicalRecord) {
-        this.medicalRecord = medicalRecord;
+    public void setPet(Pet pet) {
+        this.pet = pet;
     }
 }
