@@ -3,6 +3,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import com.example.social_pet.entities.ApprovalStatus;
 
 @Data
 @Entity
@@ -42,6 +43,10 @@ public class Adoption {
 
     @Column(nullable = true)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

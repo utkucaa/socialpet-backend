@@ -2,6 +2,7 @@ package com.example.social_pet.service;
 
 import com.example.social_pet.dto.AdoptionRequestDTO;
 import com.example.social_pet.entities.Adoption;
+import com.example.social_pet.entities.ApprovalStatus;
 import com.example.social_pet.entities.User;
 import com.example.social_pet.repository.AdoptionRepository;
 import com.example.social_pet.repository.UserRepository;
@@ -109,7 +110,27 @@ public class AdoptionService {
     }
 
     public List<Adoption> getRecentAds() {
-        List<Adoption> adoptions = adoptionRepository.findAll();
+        List<Adoption> adoptions = adoptionRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
         return adoptions;
+    }
+    
+    public List<Adoption> getPendingAdoptions() {
+        return adoptionRepository.findByApprovalStatus(ApprovalStatus.PENDING);
+    }
+    
+    @Transactional
+    public Adoption approveAdoption(Long id) {
+        Adoption adoption = adoptionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Adoption not found with id: " + id));
+        adoption.setApprovalStatus(ApprovalStatus.APPROVED);
+        return adoptionRepository.save(adoption);
+    }
+    
+    @Transactional
+    public Adoption rejectAdoption(Long id) {
+        Adoption adoption = adoptionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Adoption not found with id: " + id));
+        adoption.setApprovalStatus(ApprovalStatus.REJECTED);
+        return adoptionRepository.save(adoption);
     }
 }

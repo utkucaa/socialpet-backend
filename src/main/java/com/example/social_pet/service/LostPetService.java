@@ -1,5 +1,6 @@
 package com.example.social_pet.service;
 
+import com.example.social_pet.entities.ApprovalStatus;
 import com.example.social_pet.entities.LostPet;
 import com.example.social_pet.entities.User;
 import com.example.social_pet.repository.LostPetRepository;
@@ -33,7 +34,28 @@ public class LostPetService {
 
     // Tüm ilanları listeleme işlemi
     public List<LostPet> getAllLostPets() {
-        return lostPetRepository.findAll();
+        return lostPetRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
+    }
+
+    // Onay bekleyen ilanları listeleme işlemi (admin için)
+    public List<LostPet> getPendingLostPets() {
+        return lostPetRepository.findByApprovalStatus(ApprovalStatus.PENDING);
+    }
+
+    // İlanı onaylama işlemi (admin için)
+    public LostPet approveLostPet(Long id) {
+        LostPet lostPet = lostPetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("İlan bulunamadı!"));
+        lostPet.setApprovalStatus(ApprovalStatus.APPROVED);
+        return lostPetRepository.save(lostPet);
+    }
+
+    // İlanı reddetme işlemi (admin için)
+    public LostPet rejectLostPet(Long id) {
+        LostPet lostPet = lostPetRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("İlan bulunamadı!"));
+        lostPet.setApprovalStatus(ApprovalStatus.REJECTED);
+        return lostPetRepository.save(lostPet);
     }
 
     // Belirli bir id'ye sahip ilanı getirme
