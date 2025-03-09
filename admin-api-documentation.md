@@ -11,6 +11,97 @@ Tüm admin API çağrıları için JWT token gereklidir. Token, `Authorization` 
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
+## Dashboard Endpointleri
+
+### Onay Bekleyen İlanların Sayılarını Alma
+
+**Endpoint:** `GET /api/v1/admin/pending-counts`
+
+**Açıklama:** Onay bekleyen sahiplendirme ve kayıp ilanlarının sayılarını döndürür. Dashboard için kullanışlıdır.
+
+**Curl Örneği:**
+```bash
+curl -X GET \
+  http://localhost:8080/api/v1/admin/pending-counts \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "pendingAdoptionsCount": 5,
+  "pendingLostPetsCount": 3,
+  "totalPendingCount": 8
+}
+```
+
+### Tüm Onay Bekleyen İlanları Listeleme
+
+**Endpoint:** `GET /api/v1/admin/pending-listings`
+
+**Açıklama:** Onay bekleyen tüm sahiplendirme ve kayıp ilanlarını tek bir yanıtta listeler.
+
+**Curl Örneği:**
+```bash
+curl -X GET \
+  http://localhost:8080/api/v1/admin/pending-listings \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "pendingAdoptions": [
+    {
+      "id": 1,
+      "animalType": "Kedi",
+      "petName": "Pamuk",
+      "breed": "Tekir",
+      "age": 2,
+      "gender": "Dişi",
+      "size": "Orta",
+      "title": "Sevimli tekir kedi sahiplendirilecek",
+      "description": "3 aylık aşıları yapılmış sevimli tekir kedi sahiplendirilecektir.",
+      "source": "Bireysel",
+      "city": "İstanbul",
+      "district": "Kadıköy",
+      "fullName": "Ahmet Yılmaz",
+      "phone": "+905551234567",
+      "imageUrl": "/api/v1/files/pamuk.jpg",
+      "slug": "sevimli-tekir-kedi-sahiplendirilecek-a1b2c3d4",
+      "createdAt": "2023-05-10T14:30:00.000+00:00",
+      "approvalStatus": "PENDING",
+      "viewCount": 0,
+      "user": {
+        "id": 1,
+        "userName": "ahmet123"
+      }
+    }
+  ],
+  "pendingLostPets": [
+    {
+      "id": 1,
+      "title": "Kayıp Golden Retriever",
+      "details": "3 yaşında, sarı tüylü, erkek golden retriever. Boynunda kırmızı tasma var.",
+      "location": "İstanbul, Beşiktaş",
+      "category": "Köpek",
+      "status": "Kayıp",
+      "additionalInfo": "Ödüllü",
+      "imageUrl": "/api/v1/files/golden.jpg",
+      "contactInfo": "+905551234567",
+      "lastSeenDate": "2023-05-15",
+      "lastSeenLocation": "Beşiktaş Barbaros Bulvarı",
+      "viewCount": 0,
+      "approvalStatus": "PENDING",
+      "user": {
+        "id": 2,
+        "userName": "mehmet456"
+      }
+    }
+  ]
+}
+```
+
 ## Kullanıcı Yönetimi Endpointleri
 
 ### Tüm Kullanıcıları Listeleme
@@ -263,18 +354,297 @@ curl -X PUT \
 }
 ```
 
-## Hata Kodları
+## Sahiplendirme İlanları Yönetimi
 
-- **200 OK**: İşlem başarılı
-- **201 Created**: Yeni kayıt başarıyla oluşturuldu
-- **400 Bad Request**: İstek formatı hatalı veya eksik
-- **401 Unauthorized**: Kimlik doğrulama başarısız
-- **403 Forbidden**: Yetkilendirme hatası (admin yetkisi yok)
-- **404 Not Found**: İstenen kaynak bulunamadı
-- **500 Internal Server Error**: Sunucu hatası
+### Onay Bekleyen İlanların Sayılarını Alma
 
-## Notlar
+**Endpoint:** `GET /api/v1/admin/pending-counts`
 
-- Tüm admin endpointleri için ADMIN rolüne sahip olmanız gerekmektedir.
-- Kullanıcı şifreleri veritabanında şifrelenmiş olarak saklanır.
-- Kullanıcı oluşturma ve güncelleme işlemlerinde email ve kullanıcı adı benzersiz olmalıdır. 
+**Açıklama:** Onay bekleyen sahiplendirme ve kayıp ilanlarının sayılarını döndürür. Dashboard için kullanışlıdır.
+
+**Curl Örneği:**
+```bash
+curl -X GET \
+  http://localhost:8080/api/v1/admin/pending-counts \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "pendingAdoptionsCount": 5,
+  "pendingLostPetsCount": 3,
+  "totalPendingCount": 8
+}
+```
+
+### Tüm Onay Bekleyen İlanları Listeleme
+
+**Endpoint:** `GET /api/v1/admin/pending-listings`
+
+**Açıklama:** Onay bekleyen tüm sahiplendirme ve kayıp ilanlarını tek bir yanıtta listeler.
+
+**Curl Örneği:**
+```bash
+curl -X GET \
+  http://localhost:8080/api/v1/admin/pending-listings \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "pendingAdoptions": [
+    {
+      "id": 1,
+      "animalType": "Kedi",
+      "petName": "Pamuk",
+      "breed": "Tekir",
+      "age": 2,
+      "gender": "Dişi",
+      "size": "Orta",
+      "title": "Sevimli tekir kedi sahiplendirilecek",
+      "description": "3 aylık aşıları yapılmış sevimli tekir kedi sahiplendirilecektir.",
+      "source": "Bireysel",
+      "city": "İstanbul",
+      "district": "Kadıköy",
+      "fullName": "Ahmet Yılmaz",
+      "phone": "+905551234567",
+      "imageUrl": "/api/v1/files/pamuk.jpg",
+      "slug": "sevimli-tekir-kedi-sahiplendirilecek-a1b2c3d4",
+      "createdAt": "2023-05-10T14:30:00.000+00:00",
+      "approvalStatus": "PENDING",
+      "viewCount": 0,
+      "user": {
+        "id": 1,
+        "userName": "ahmet123"
+      }
+    }
+  ],
+  "pendingLostPets": [
+    {
+      "id": 1,
+      "title": "Kayıp Golden Retriever",
+      "details": "3 yaşında, sarı tüylü, erkek golden retriever. Boynunda kırmızı tasma var.",
+      "location": "İstanbul, Beşiktaş",
+      "category": "Köpek",
+      "status": "Kayıp",
+      "additionalInfo": "Ödüllü",
+      "imageUrl": "/api/v1/files/golden.jpg",
+      "contactInfo": "+905551234567",
+      "lastSeenDate": "2023-05-15",
+      "lastSeenLocation": "Beşiktaş Barbaros Bulvarı",
+      "viewCount": 0,
+      "approvalStatus": "PENDING",
+      "user": {
+        "id": 2,
+        "userName": "mehmet456"
+      }
+    }
+  ]
+}
+```
+
+### Onay Bekleyen Sahiplendirme İlanlarını Listeleme
+
+**Endpoint:** `GET /api/v1/admin/adoptions/pending`
+
+**Açıklama:** Onay bekleyen tüm sahiplendirme ilanlarını listeler.
+
+**Curl Örneği:**
+```bash
+curl -X GET \
+  http://localhost:8080/api/v1/admin/adoptions/pending \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+[
+  {
+    "id": 1,
+    "animalType": "Kedi",
+    "petName": "Pamuk",
+    "breed": "Tekir",
+    "age": 2,
+    "gender": "Dişi",
+    "size": "Orta",
+    "title": "Sevimli tekir kedi sahiplendirilecek",
+    "description": "3 aylık aşıları yapılmış sevimli tekir kedi sahiplendirilecektir.",
+    "source": "Bireysel",
+    "city": "İstanbul",
+    "district": "Kadıköy",
+    "fullName": "Ahmet Yılmaz",
+    "phone": "+905551234567",
+    "imageUrl": "/api/v1/files/pamuk.jpg",
+    "slug": "sevimli-tekir-kedi-sahiplendirilecek-a1b2c3d4",
+    "createdAt": "2023-05-10T14:30:00.000+00:00",
+    "approvalStatus": "PENDING",
+    "viewCount": 0,
+    "user": {
+      "id": 1,
+      "userName": "ahmet123"
+    }
+  }
+]
+```
+
+### Sahiplendirme İlanını Onaylama
+
+**Endpoint:** `PUT /api/v1/admin/adoptions/{id}/approve`
+
+**Açıklama:** Belirtilen ID'ye sahip sahiplendirme ilanını onaylar.
+
+**Curl Örneği:**
+```bash
+curl -X PUT \
+  http://localhost:8080/api/v1/admin/adoptions/1/approve \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "id": 1,
+  "animalType": "Kedi",
+  "petName": "Pamuk",
+  "breed": "Tekir",
+  "age": 2,
+  "gender": "Dişi",
+  "size": "Orta",
+  "title": "Sevimli tekir kedi sahiplendirilecek",
+  "description": "3 aylık aşıları yapılmış sevimli tekir kedi sahiplendirilecektir.",
+  "source": "Bireysel",
+  "city": "İstanbul",
+  "district": "Kadıköy",
+  "fullName": "Ahmet Yılmaz",
+  "phone": "+905551234567",
+  "imageUrl": "/api/v1/files/pamuk.jpg",
+  "slug": "sevimli-tekir-kedi-sahiplendirilecek-a1b2c3d4",
+  "createdAt": "2023-05-10T14:30:00.000+00:00",
+  "approvalStatus": "APPROVED",
+  "viewCount": 0,
+  "user": {
+    "id": 1,
+    "userName": "ahmet123"
+  }
+}
+```
+
+### Sahiplendirme İlanını Reddetme
+
+**Endpoint:** `PUT /api/v1/admin/adoptions/{id}/reject`
+
+**Açıklama:** Belirtilen ID'ye sahip sahiplendirme ilanını reddeder.
+
+**Curl Örneği:**
+```bash
+curl -X PUT \
+  http://localhost:8080/api/v1/admin/adoptions/1/reject \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "id": 1,
+  "animalType": "Kedi",
+  "petName": "Pamuk",
+  "breed": "Tekir",
+  "age": 2,
+  "gender": "Dişi",
+  "size": "Orta",
+  "title": "Sevimli tekir kedi sahiplendirilecek",
+  "description": "3 aylık aşıları yapılmış sevimli tekir kedi sahiplendirilecektir.",
+  "source": "Bireysel",
+  "city": "İstanbul",
+  "district": "Kadıköy",
+  "fullName": "Ahmet Yılmaz",
+  "phone": "+905551234567",
+  "imageUrl": "/api/v1/files/pamuk.jpg",
+  "slug": "sevimli-tekir-kedi-sahiplendirilecek-a1b2c3d4",
+  "createdAt": "2023-05-10T14:30:00.000+00:00",
+  "approvalStatus": "REJECTED",
+  "viewCount": 0,
+  "user": {
+    "id": 1,
+    "userName": "ahmet123"
+  }
+}
+```
+
+## Kayıp İlanları Yönetimi
+
+### Onay Bekleyen Kayıp İlanlarını Listeleme
+
+**Endpoint:** `GET /api/v1/admin/lostpets/pending`
+
+**Açıklama:** Onay bekleyen tüm kayıp ilanlarını listeler.
+
+**Curl Örneği:**
+```bash
+curl -X GET \
+  http://localhost:8080/api/v1/admin/lostpets/pending \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+[
+  {
+    "id": 1,
+    "title": "Kayıp Golden Retriever",
+    "details": "3 yaşında, sarı tüylü, erkek golden retriever. Boynunda kırmızı tasma var.",
+    "location": "İstanbul, Beşiktaş",
+    "category": "Köpek",
+    "status": "Kayıp",
+    "additionalInfo": "Ödüllü",
+    "imageUrl": "/api/v1/files/golden.jpg",
+    "contactInfo": "+905551234567",
+    "lastSeenDate": "2023-05-15",
+    "lastSeenLocation": "Beşiktaş Barbaros Bulvarı",
+    "viewCount": 0,
+    "approvalStatus": "PENDING",
+    "user": {
+      "id": 2,
+      "userName": "mehmet456"
+    }
+  }
+]
+```
+
+### Kayıp İlanını Onaylama
+
+**Endpoint:** `PUT /api/v1/admin/lostpets/{id}/approve`
+
+**Açıklama:** Belirtilen ID'ye sahip kayıp ilanını onaylar.
+
+**Curl Örneği:**
+```bash
+curl -X PUT \
+  http://localhost:8080/api/v1/admin/lostpets/1/approve \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "id": 1,
+  "title": "Kayıp Golden Retriever",
+  "details": "3 yaşında, sarı tüylü, erkek golden retriever. Boynunda kırmızı tasma var.",
+  "location": "İstanbul, Beşiktaş",
+  "category": "Köpek",
+  "status": "Kayıp",
+  "additionalInfo": "Ödüllü",
+  "imageUrl": "/api/v1/files/golden.jpg",
+  "contactInfo": "+905551234567",
+  "lastSeenDate": "2023-05-15",
+  "lastSeenLocation": "Beşiktaş Barbaros Bulvarı",
+  "viewCount": 0,
+  "approvalStatus": "APPROVED",
+  "user": {
+    "id": 2,
+    "userName": "mehmet456"
+  }
+}
+```
