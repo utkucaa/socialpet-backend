@@ -648,3 +648,79 @@ curl -X PUT \
   }
 }
 ```
+
+## Dosya Yönetimi Endpointleri
+
+### Dosya Yükleme
+
+**Endpoint:** `POST /api/v1/files/upload`
+
+**Açıklama:** Sisteme tek bir dosya yükler. Genellikle resim dosyaları için kullanılır.
+
+**İstek Parametreleri:**
+- `file`: Yüklenecek dosya (multipart/form-data)
+
+**Curl Örneği:**
+```bash
+curl -X POST \
+  http://localhost:8080/api/v1/files/upload \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'file=@/path/to/your/image.jpg'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "fileName": "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6.jpg",
+  "fileUrl": "http://localhost:8080/api/v1/files/a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6.jpg",
+  "message": "File uploaded successfully"
+}
+```
+
+### Çoklu Dosya Yükleme
+
+**Endpoint:** `POST /api/v1/files/upload-multiple`
+
+**Açıklama:** Sisteme birden fazla dosya yükler.
+
+**İstek Parametreleri:**
+- `files`: Yüklenecek dosyalar (multipart/form-data)
+
+**Curl Örneği:**
+```bash
+curl -X POST \
+  http://localhost:8080/api/v1/files/upload-multiple \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN' \
+  -H 'Content-Type: multipart/form-data' \
+  -F 'files=@/path/to/your/image1.jpg' \
+  -F 'files=@/path/to/your/image2.jpg' \
+  -F 'files=@/path/to/your/image3.jpg'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "uploadedFiles": {
+    "a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6.jpg": "http://localhost:8080/api/v1/files/a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6.jpg",
+    "b2c3d4e5-6f7g-8h9i-0j1k-l2m3n4o5p6q7.jpg": "http://localhost:8080/api/v1/files/b2c3d4e5-6f7g-8h9i-0j1k-l2m3n4o5p6q7.jpg",
+    "c3d4e5f6-7g8h-9i0j-1k2l-m3n4o5p6q7r8.jpg": "http://localhost:8080/api/v1/files/c3d4e5f6-7g8h-9i0j-1k2l-m3n4o5p6q7r8.jpg"
+  },
+  "message": "Files uploaded successfully"
+}
+```
+
+### Dosya İndirme
+
+**Endpoint:** `GET /api/v1/files/{fileName}`
+
+**Açıklama:** Belirtilen dosyayı indirir veya görüntüler.
+
+**Curl Örneği:**
+```bash
+curl -X GET \
+  http://localhost:8080/api/v1/files/a1b2c3d4-5e6f-7g8h-9i0j-k1l2m3n4o5p6.jpg \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt:** Dosya içeriği
