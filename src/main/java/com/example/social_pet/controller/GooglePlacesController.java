@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -222,5 +223,59 @@ public class GooglePlacesController {
         logger.info("Received request for text search: {} in {}, {}", query, district, city);
         
         return googlePlacesService.textSearchPlacesByLocation(query, city, district, radius);
+    }
+    
+    /**
+     * Perform a search for any type of place using coordinates
+     * 
+     * @param latitude The latitude coordinate
+     * @param longitude The longitude coordinate
+     * @param radius The search radius in meters (max 50000)
+     * @param type The type of place (e.g., "veterinary_care", "pet_store", "restaurant", etc.)
+     * @param keyword Optional keyword to further filter results
+     * @param openNow Optional parameter to filter for only open places (default: false)
+     * @return ResponseEntity containing the Google Places API response
+     */
+    @GetMapping("/search-by-coordinates")
+    public ResponseEntity<String> searchByCoordinates(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam(defaultValue = "5000") int radius,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "false") boolean openNow) {
+        
+        logger.info("Received request to search at coordinates {},{} with radius {}m, type: {}, keyword: {}, openNow: {}", 
+                latitude, longitude, radius, type, keyword, openNow);
+        
+        if (type != null && !type.isEmpty()) {
+            // Belirli bir tür için arama yap
+            return googlePlacesService.searchNearbyPlaces(latitude, longitude, radius, type, openNow);
+        } else if (keyword != null && !keyword.isEmpty()) {
+            // Anahtar kelime ile metin araması yap
+            return googlePlacesService.textSearchPlaces(keyword, latitude, longitude, radius, openNow);
+        } else {
+            // Varsayılan olarak veteriner klinikleri ara
+            return googlePlacesService.searchNearbyPlaces(latitude, longitude, radius, "veterinary_care", openNow);
+        }
+    }
+    
+    /**
+     * Get a place photo by its reference
+     * 
+     * @param photoReference The photo reference from Places API
+     * @param maxWidth The maximum width of the image (optional)
+     * @param maxHeight The maximum height of the image (optional)
+     * @return ResponseEntity containing the image data
+     */
+    @GetMapping(value = "/photo", produces = MediaType.IMAGE_JPEG_VALUE)
+    public ResponseEntity<byte[]> getPlacePhoto(
+            @RequestParam String photoReference,
+            @RequestParam(required = false) Integer maxWidth,
+            @RequestParam(required = false) Integer maxHeight) {
+        
+        logger.info("Received request to get photo with reference: {}", photoReference);
+        
+        return googlePlacesService.getPlacePhoto(photoReference, maxWidth, maxHeight);
     }
 } 

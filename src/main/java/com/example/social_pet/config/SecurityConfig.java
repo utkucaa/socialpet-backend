@@ -82,6 +82,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/breeds/**").permitAll()
                 .requestMatchers("/api/v1/users/login").permitAll()
                 .requestMatchers("/api/v1/users/register").permitAll()
+                .requestMatchers("/api/v1/places/**").permitAll()
                 .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                 .requestMatchers("/error").permitAll()
                 .anyRequest().authenticated()
