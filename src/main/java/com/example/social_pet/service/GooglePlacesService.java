@@ -464,6 +464,10 @@ public class GooglePlacesService {
         
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(PLACES_DETAILS_URL)
                 .queryParam("place_id", placeId)
+                .queryParam("language", "tr")  // Türkçe sonuçlar ve değerlendirmeler için
+                .queryParam("reviews_no_translations", "false") // Değerlendirmelerin çevirisini iste
+                .queryParam("reviews_sort", "newest") // En yeni değerlendirmeleri göster
+                .queryParam("fields", "name,rating,formatted_address,formatted_phone_number,geometry,opening_hours,photos,reviews,types,website,url,vicinity,user_ratings_total,price_level,international_phone_number,address_components")
                 .queryParam("key", apiKey)
                 .queryParam("timestamp", System.currentTimeMillis());
         
