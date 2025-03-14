@@ -2,6 +2,7 @@ package com.example.social_pet.dto;
 
 import com.example.social_pet.entities.Role;
 import com.example.social_pet.entities.User;
+import com.example.social_pet.entities.ApprovalStatus;
 
 import java.util.Date;
 
@@ -14,6 +15,7 @@ public class AdminUserDTO {
     private String phoneNumber;
     private String avatarUrl;
     private Role role;
+    private ApprovalStatus approvalStatus;
     private Date joinDate;
     private int petCount;
     private int questionCount;
@@ -30,6 +32,7 @@ public class AdminUserDTO {
         this.phoneNumber = user.getPhoneNumber();
         this.avatarUrl = user.getAvatarUrl();
         this.role = user.getRole();
+        this.approvalStatus = user.getApprovalStatus();
         this.joinDate = user.getJoinDate();
         this.petCount = user.getPets() != null ? user.getPets().size() : 0;
         this.questionCount = user.getQuestions() != null ? user.getQuestions().size() : 0;
@@ -101,6 +104,14 @@ public class AdminUserDTO {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    public ApprovalStatus getApprovalStatus() {
+        return approvalStatus;
+    }
+
+    public void setApprovalStatus(ApprovalStatus approvalStatus) {
+        this.approvalStatus = approvalStatus;
     }
 
     public Date getJoinDate() {

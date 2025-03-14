@@ -1,17 +1,17 @@
 package com.example.social_pet.response;
 
 public class FileUrlResponse {
-    private String data;
+    private String fileUrl;
 
-    public FileUrlResponse(String data) {
-        this.data = data;
+    public FileUrlResponse(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
-    public String getData() {
-        return data;
+    public String getFileUrl() {
+        return fileUrl;
     }
 
-    public void setData(String data) {
-        this.data = data;
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 }
