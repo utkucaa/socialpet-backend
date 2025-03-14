@@ -4,6 +4,7 @@ import com.example.social_pet.dto.UserDTO;
 import com.example.social_pet.dto.UserStatsDTO;
 import com.example.social_pet.entities.User;
 import com.example.social_pet.entities.Role;
+import com.example.social_pet.entities.ApprovalStatus;
 import com.example.social_pet.repository.UserRepository;
 import com.example.social_pet.security.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserService {
@@ -43,6 +45,12 @@ public class UserService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Invalid password");
         }
+        
+        // Check if user is approved
+        if (user.getApprovalStatus() != ApprovalStatus.APPROVED && !user.isAdmin()) {
+            throw new RuntimeException("Your account is pending approval or has been rejected");
+        }
+        
         return user;
     }
 
@@ -59,7 +67,33 @@ public class UserService {
         user.setLastName(userDTO.getLastName());
         user.setPhoneNumber(userDTO.getPhoneNumber());
         user.setRole(Role.MEMBER); // Set default role as MEMBER
+        user.setApprovalStatus(ApprovalStatus.PENDING); // Set default approval status as PENDING
         
+        return userRepository.save(user);
+    }
+
+    // Get all pending users
+    public List<User> getPendingUsers() {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getApprovalStatus() == ApprovalStatus.PENDING)
+                .collect(Collectors.toList());
+    }
+
+    // Approve a user
+    public User approveUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        
+        user.setApprovalStatus(ApprovalStatus.APPROVED);
+        return userRepository.save(user);
+    }
+
+    // Reject a user
+    public User rejectUser(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+        
+        user.setApprovalStatus(ApprovalStatus.REJECTED);
         return userRepository.save(user);
     }
 

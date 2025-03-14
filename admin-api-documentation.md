@@ -17,7 +17,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 **Endpoint:** `GET /api/v1/admin/pending-counts`
 
-**Açıklama:** Onay bekleyen sahiplendirme ve kayıp ilanlarının sayılarını döndürür. Dashboard için kullanışlıdır.
+**Açıklama:** Onay bekleyen kullanıcıların, sahiplendirme ve kayıp ilanlarının sayılarını döndürür. Dashboard için kullanışlıdır.
 
 **Curl Örneği:**
 ```bash
@@ -29,9 +29,10 @@ curl -X GET \
 **Yanıt Örneği:**
 ```json
 {
+  "pendingUsersCount": 3,
   "pendingAdoptionsCount": 5,
   "pendingLostPetsCount": 3,
-  "totalPendingCount": 8
+  "totalPendingCount": 11
 }
 ```
 
@@ -39,7 +40,7 @@ curl -X GET \
 
 **Endpoint:** `GET /api/v1/admin/pending-listings`
 
-**Açıklama:** Onay bekleyen tüm sahiplendirme ve kayıp ilanlarını tek bir yanıtta listeler.
+**Açıklama:** Onay bekleyen tüm kullanıcıları, sahiplendirme ve kayıp ilanlarını tek bir yanıtta listeler.
 
 **Curl Örneği:**
 ```bash
@@ -51,6 +52,25 @@ curl -X GET \
 **Yanıt Örneği:**
 ```json
 {
+  "pendingUsers": [
+    {
+      "id": 3,
+      "userName": "yenikullanici",
+      "firstName": "Yeni",
+      "lastName": "Kullanıcı",
+      "email": "yeni@example.com",
+      "phoneNumber": "+905551234567",
+      "avatarUrl": null,
+      "role": "MEMBER",
+      "approvalStatus": "PENDING",
+      "joinDate": "2023-03-20T14:25:30.000+00:00",
+      "petCount": 0,
+      "questionCount": 0,
+      "answerCount": 0,
+      "adoptionCount": 0,
+      "lostPetCount": 0
+    }
+  ],
   "pendingAdoptions": [
     {
       "id": 1,
@@ -129,6 +149,7 @@ curl -X GET \
     "phoneNumber": "+905551234567",
     "avatarUrl": "/api/v1/files/profile1.jpg",
     "role": "MEMBER",
+    "approvalStatus": "APPROVED",
     "joinDate": "2023-01-15T10:30:00.000+00:00",
     "petCount": 2,
     "questionCount": 5,
@@ -145,12 +166,49 @@ curl -X GET \
     "phoneNumber": "+905559876543",
     "avatarUrl": "/api/v1/files/profile2.jpg",
     "role": "ADMIN",
+    "approvalStatus": "APPROVED",
     "joinDate": "2023-01-10T08:15:00.000+00:00",
     "petCount": 1,
     "questionCount": 3,
     "answerCount": 15,
     "adoptionCount": 0,
     "lostPetCount": 1
+  }
+]
+```
+
+### Onay Bekleyen Kullanıcıları Listeleme
+
+**Endpoint:** `GET /api/v1/admin/users/pending`
+
+**Açıklama:** Sistemdeki onay bekleyen tüm kullanıcıları listeler.
+
+**Curl Örneği:**
+```bash
+curl -X GET \
+  http://localhost:8080/api/v1/admin/users/pending \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+[
+  {
+    "id": 3,
+    "userName": "yenikullanici",
+    "firstName": "Yeni",
+    "lastName": "Kullanıcı",
+    "email": "yeni@example.com",
+    "phoneNumber": "+905551234567",
+    "avatarUrl": null,
+    "role": "MEMBER",
+    "approvalStatus": "PENDING",
+    "joinDate": "2023-03-20T14:25:30.000+00:00",
+    "petCount": 0,
+    "questionCount": 0,
+    "answerCount": 0,
+    "adoptionCount": 0,
+    "lostPetCount": 0
   }
 ]
 ```
@@ -179,6 +237,7 @@ curl -X GET \
   "phoneNumber": "+905551234567",
   "avatarUrl": "/api/v1/files/profile1.jpg",
   "role": "MEMBER",
+  "approvalStatus": "APPROVED",
   "joinDate": "2023-01-15T10:30:00.000+00:00",
   "petCount": 2,
   "questionCount": 5,
@@ -235,6 +294,7 @@ curl -X POST \
   "phoneNumber": "+905551234567",
   "avatarUrl": null,
   "role": "MEMBER",
+  "approvalStatus": "PENDING",
   "joinDate": "2023-03-20T14:25:30.000+00:00",
   "petCount": 0,
   "questionCount": 0,
@@ -291,6 +351,7 @@ curl -X PUT \
   "phoneNumber": "+905559876543",
   "avatarUrl": "/api/v1/files/profile1.jpg",
   "role": "MEMBER",
+  "approvalStatus": "APPROVED",
   "joinDate": "2023-01-15T10:30:00.000+00:00",
   "petCount": 2,
   "questionCount": 5,
@@ -345,11 +406,80 @@ curl -X PUT \
   "phoneNumber": "+905551234567",
   "avatarUrl": "/api/v1/files/profile1.jpg",
   "role": "ADMIN",
+  "approvalStatus": "APPROVED",
   "joinDate": "2023-01-15T10:30:00.000+00:00",
   "petCount": 2,
   "questionCount": 5,
   "answerCount": 10,
   "adoptionCount": 1,
+  "lostPetCount": 0
+}
+```
+
+### Kullanıcı Onaylama
+
+**Endpoint:** `PUT /api/v1/admin/users/{userId}/approve`
+
+**Açıklama:** Belirtilen ID'ye sahip kullanıcıyı onaylar.
+
+**Curl Örneği:**
+```bash
+curl -X PUT \
+  http://localhost:8080/api/v1/admin/users/3/approve \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "id": 3,
+  "userName": "yenikullanici",
+  "firstName": "Yeni",
+  "lastName": "Kullanıcı",
+  "email": "yeni@example.com",
+  "phoneNumber": "+905551234567",
+  "avatarUrl": null,
+  "role": "MEMBER",
+  "approvalStatus": "APPROVED",
+  "joinDate": "2023-03-20T14:25:30.000+00:00",
+  "petCount": 0,
+  "questionCount": 0,
+  "answerCount": 0,
+  "adoptionCount": 0,
+  "lostPetCount": 0
+}
+```
+
+### Kullanıcı Reddetme
+
+**Endpoint:** `PUT /api/v1/admin/users/{userId}/reject`
+
+**Açıklama:** Belirtilen ID'ye sahip kullanıcıyı reddeder.
+
+**Curl Örneği:**
+```bash
+curl -X PUT \
+  http://localhost:8080/api/v1/admin/users/3/reject \
+  -H 'Authorization: Bearer YOUR_JWT_TOKEN'
+```
+
+**Yanıt Örneği:**
+```json
+{
+  "id": 3,
+  "userName": "yenikullanici",
+  "firstName": "Yeni",
+  "lastName": "Kullanıcı",
+  "email": "yeni@example.com",
+  "phoneNumber": "+905551234567",
+  "avatarUrl": null,
+  "role": "MEMBER",
+  "approvalStatus": "REJECTED",
+  "joinDate": "2023-03-20T14:25:30.000+00:00",
+  "petCount": 0,
+  "questionCount": 0,
+  "answerCount": 0,
+  "adoptionCount": 0,
   "lostPetCount": 0
 }
 ```

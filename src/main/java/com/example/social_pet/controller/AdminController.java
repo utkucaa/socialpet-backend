@@ -109,15 +109,53 @@ public class AdminController {
         }
     }
 
+    // Get pending users
+    @GetMapping("/users/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AdminUserDTO>> getPendingUsers() {
+        List<User> pendingUsers = userService.getPendingUsers();
+        List<AdminUserDTO> userDTOs = pendingUsers.stream()
+                .map(AdminUserDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userDTOs);
+    }
+
+    // Approve user
+    @PutMapping("/users/{userId}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> approveUser(@PathVariable Long userId) {
+        try {
+            User user = userService.approveUser(userId);
+            AdminUserDTO responseDTO = new AdminUserDTO(user);
+            return ResponseEntity.ok(responseDTO);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
+    // Reject user
+    @PutMapping("/users/{userId}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> rejectUser(@PathVariable Long userId) {
+        try {
+            User user = userService.rejectUser(userId);
+            AdminUserDTO responseDTO = new AdminUserDTO(user);
+            return ResponseEntity.ok(responseDTO);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
+    }
+
     // Get counts of pending listings for dashboard
     @GetMapping("/pending-counts")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getPendingCounts() {
         Map<String, Object> response = new HashMap<>();
+        response.put("pendingUsersCount", userService.getPendingUsers().size());
         response.put("pendingAdoptionsCount", adoptionService.getPendingAdoptions().size());
         response.put("pendingLostPetsCount", lostPetService.getPendingLostPets().size());
         response.put("totalPendingCount", 
-            adoptionService.getPendingAdoptions().size() + lostPetService.getPendingLostPets().size());
+            userService.getPendingUsers().size() + adoptionService.getPendingAdoptions().size() + lostPetService.getPendingLostPets().size());
         return ResponseEntity.ok(response);
     }
 
@@ -126,6 +164,9 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> getAllPendingListings() {
         Map<String, Object> response = new HashMap<>();
+        response.put("pendingUsers", userService.getPendingUsers().stream()
+                .map(AdminUserDTO::new)
+                .collect(Collectors.toList()));
         response.put("pendingAdoptions", adoptionService.getPendingAdoptions());
         response.put("pendingLostPets", lostPetService.getPendingLostPets());
         return ResponseEntity.ok(response);
