@@ -23,9 +23,10 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.springframework.core.io.FileSystemResource;
 
 @Service
 public class TensorFlowService {
@@ -38,7 +39,7 @@ public class TensorFlowService {
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private Process pythonApiProcess;
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String apiUrl = "http://localhost:8080";
+    private final String apiUrl = "http://localhost:5012";
     private final int MAX_RETRY_COUNT = 5;
     private final int RETRY_DELAY_MS = 2000;
     
@@ -86,10 +87,10 @@ public class TensorFlowService {
             ProcessBuilder pb;
             if (os.contains("win")) {
                 // Windows
-                pb = new ProcessBuilder("cmd.exe", "/c", "netstat -ano | findstr :8080 | findstr LISTENING");
+                pb = new ProcessBuilder("cmd.exe", "/c", "netstat -ano | findstr :5012 | findstr LISTENING");
             } else {
                 // Unix-like
-                pb = new ProcessBuilder("bash", "-c", "lsof -i :8080 | grep LISTEN | awk '{print $2}'");
+                pb = new ProcessBuilder("bash", "-c", "lsof -i :5012 | grep LISTEN | awk '{print $2}'");
             }
             
             Process p = pb.start();
@@ -103,7 +104,7 @@ public class TensorFlowService {
                         ? line.substring(line.lastIndexOf(" ")).trim() 
                         : line;
                     
-                    logger.info("Killing process using port 8080: {}", pid);
+                    logger.info("Killing process using port 5012: {}", pid);
                     
                     if (os.contains("win")) {
                         Runtime.getRuntime().exec("taskkill /F /PID " + pid);
@@ -127,11 +128,19 @@ public class TensorFlowService {
             
             logger.info("Python script path: {}", scriptPath);
             
+            // Set environment variables for production
+            Map<String, String> env = new HashMap<>(System.getenv());
+            env.put("PORT", "5012");
+            env.put("GUNICORN_WORKERS", "4");
+            
             // Start Python API process with the full path
             ProcessBuilder pb = new ProcessBuilder(
                 "python3", 
                 scriptPath
             );
+            
+            // Set environment variables
+            pb.environment().putAll(env);
             
             // Set the working directory to the project root
             pb.directory(currentDir);
@@ -211,6 +220,10 @@ public class TensorFlowService {
         }
         
         try {
+            // Create a temporary file from the MultipartFile
+            File tempFile = File.createTempFile("upload-", "-" + imageFile.getOriginalFilename());
+            imageFile.transferTo(tempFile);
+            
             // Prepare request to Python API
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -218,8 +231,8 @@ public class TensorFlowService {
             // Create multipart request
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             
-            // Add file to the request
-            body.add("image", imageFile.getResource());
+            // Add file to the request using FileSystemResource instead of the MultipartFile resource
+            body.add("image", new FileSystemResource(tempFile));
             
             // Create HTTP entity
             HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
@@ -230,6 +243,9 @@ public class TensorFlowService {
                 requestEntity,
                 Map.class
             );
+            
+            // Delete the temp file after use
+            tempFile.delete();
             
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 Map<String, Object> result = response.getBody();

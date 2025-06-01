@@ -3,6 +3,8 @@ package com.example.social_pet.controller;
 import com.example.social_pet.dto.AdoptionRequestDTO;
 import com.example.social_pet.entities.Adoption;
 import com.example.social_pet.service.AdoptionService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -17,6 +19,8 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class AdoptionController {
 
+    private static final Logger logger = LoggerFactory.getLogger(AdoptionController.class);
+    
     private final AdoptionService adoptionService;
 
     @Autowired
@@ -55,9 +59,36 @@ public class AdoptionController {
 
     @GetMapping("/{slug}")
     public ResponseEntity<Adoption> getAdoptionBySlug(@PathVariable String slug) {
+        logger.info("Request to get adoption by slug: {}", slug);
         try {
-            return adoptionService.getBySlug(slug);
-        } catch (RuntimeException e) {
+            ResponseEntity<Adoption> response = adoptionService.getBySlug(slug);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                logger.info("Successfully retrieved adoption with slug: {}", slug);
+                return response;
+            } else {
+                logger.warn("Adoption not found with slug: {}", slug);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving adoption with slug {}: {}", slug, e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/id/{id}")
+    public ResponseEntity<Adoption> getAdoptionById(@PathVariable Long id) {
+        logger.info("Request to get adoption by ID: {}", id);
+        try {
+            Adoption adoption = adoptionService.getById(id);
+            if (adoption != null) {
+                logger.info("Successfully retrieved adoption with ID: {}", id);
+                return ResponseEntity.ok(adoption);
+            } else {
+                logger.warn("Adoption not found with ID: {}", id);
+                return ResponseEntity.notFound().build();
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving adoption with ID {}: {}", id, e.getMessage());
             return ResponseEntity.notFound().build();
         }
     }

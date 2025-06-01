@@ -7,6 +7,8 @@ import com.example.social_pet.entities.User;
 import com.example.social_pet.repository.AdoptionRepository;
 import com.example.social_pet.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +21,8 @@ import java.util.UUID;
 
 @Service
 public class AdoptionService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AdoptionService.class);
 
     @Autowired
     private final UserRepository userRepository;
@@ -77,11 +81,19 @@ public class AdoptionService {
     }
 
     public ResponseEntity<Adoption> getBySlug(String slug) {
-        Adoption adoption = adoptionRepository.findBySlug(slug)
-                .orElseThrow(() -> new RuntimeException("Adoption not found with slug: " + slug));
+        logger.info("Looking for adoption with slug: {}", slug);
         
-        incrementViewCount(adoption);
-        return ResponseEntity.ok(adoption);
+        try {
+            Adoption adoption = adoptionRepository.findBySlug(slug)
+                    .orElseThrow(() -> new RuntimeException("Adoption not found with slug: " + slug));
+            
+            logger.info("Found adoption: {}", adoption.getId());
+            incrementViewCount(adoption);
+            return ResponseEntity.ok(adoption);
+        } catch (Exception e) {
+            logger.error("Error finding adoption with slug {}: {}", slug, e.getMessage());
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Transactional
@@ -112,6 +124,11 @@ public class AdoptionService {
     public List<Adoption> getRecentAds() {
         List<Adoption> adoptions = adoptionRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
         return adoptions;
+    }
+    
+    public Adoption getById(Long id) {
+        return adoptionRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Adoption not found with id: " + id));
     }
     
     public List<Adoption> getPendingAdoptions() {

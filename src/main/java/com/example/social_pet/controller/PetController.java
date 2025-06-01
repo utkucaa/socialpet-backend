@@ -8,6 +8,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
 
 import java.util.Arrays;
 import java.util.List;
@@ -18,6 +23,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/pets")
 public class PetController {
 
+    private static final Logger logger = LoggerFactory.getLogger(PetController.class);
+    
     private final PetService petService;
 
     @Autowired
@@ -45,8 +52,35 @@ public class PetController {
     }
 
     @PostMapping
-    public ResponseEntity<PetDto> createPet(@RequestBody PetRequestDto petRequestDto) {
-        return new ResponseEntity<>(petService.createPet(petRequestDto), HttpStatus.CREATED);
+    public ResponseEntity<?> createPet(@Valid @RequestBody PetRequestDto petRequestDto, BindingResult bindingResult) {
+        try {
+            logger.info("🚀 Pet oluşturma isteği alındı");
+            logger.info("📋 Raw Data -> Name: '{}', Age: {}, Gender: '{}', AnimalType: '{}', OwnerId: {}, BreedId: {}", 
+                petRequestDto.getName(),
+                petRequestDto.getAge(),
+                petRequestDto.getGender(),
+                petRequestDto.getAnimalType(),
+                petRequestDto.getOwnerId(),
+                petRequestDto.getBreedId()
+            );
+            
+            if (bindingResult.hasErrors()) {
+                List<String> errors = bindingResult.getFieldErrors()
+                        .stream()
+                        .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                        .collect(Collectors.toList());
+                logger.error("❌ Validation hataları: {}", errors);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "Validation failed: " + String.join(", ", errors), "status", 400));
+            }
+            
+            PetDto createdPet = petService.createPet(petRequestDto);
+            return new ResponseEntity<>(createdPet, HttpStatus.CREATED);
+        } catch (Exception e) {
+            logger.error("💥 Pet oluşturma hatası: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage(), "status", 500));
+        }
     }
 
     @PutMapping("/{id}")

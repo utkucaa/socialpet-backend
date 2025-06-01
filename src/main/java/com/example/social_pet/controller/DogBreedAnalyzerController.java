@@ -44,26 +44,23 @@ public class DogBreedAnalyzerController {
                    imageFile != null ? imageFile.getOriginalFilename() : "null");
         
         try {
-            // Check if file is empty or null
             if (imageFile == null || imageFile.isEmpty()) {
                 logger.warn("Empty or null file uploaded");
                 return ResponseEntity.badRequest().body(createErrorResponse("Please upload an image file"));
             }
 
-            // Check if file is an image
+            
             String contentType = imageFile.getContentType();
             if (contentType == null || !contentType.startsWith("image/")) {
                 logger.warn("Invalid file type uploaded: {}", contentType);
                 return ResponseEntity.badRequest().body(createErrorResponse("Please upload a valid image file"));
             }
 
-            // Log file details
             logger.info("Processing image file: name={}, size={}, type={}", 
                       imageFile.getOriginalFilename(), 
                       imageFile.getSize(), 
                       imageFile.getContentType());
 
-            // Process the image with TensorFlow model
             Map<String, Object> analysisResult = tensorFlowService.analyzeDogBreed(imageFile);
             
             logger.info("Analysis complete. Identified primary breed: {}", analysisResult.get("primaryBreed"));

@@ -10,12 +10,16 @@ import com.example.social_pet.repository.PetRepository;
 import com.example.social_pet.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class PetService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PetService.class);
 
     private final PetRepository petRepository;
     private final UserRepository userRepository;
@@ -47,6 +51,25 @@ public class PetService {
     }
 
     public PetDto createPet(PetRequestDto petRequestDto) {
+        logger.info("🔍 Pet oluşturma isteği alındı: {}", petRequestDto);
+        logger.info("📋 OwnerId: {}, BreedId: {}, Name: {}, Age: {}, Gender: {}, AnimalType: {}", 
+            petRequestDto.getOwnerId(), 
+            petRequestDto.getBreedId(),
+            petRequestDto.getName(),
+            petRequestDto.getAge(),
+            petRequestDto.getGender(),
+            petRequestDto.getAnimalType());
+        
+        if (petRequestDto.getOwnerId() == null) {
+            logger.error("❌ OwnerId null!");
+            throw new RuntimeException("Owner ID is required and cannot be null");
+        }
+        
+        if (petRequestDto.getBreedId() == null) {
+            logger.error("❌ BreedId null!");
+            throw new RuntimeException("Breed ID is required and cannot be null");
+        }
+        
         User owner = userRepository.findById(petRequestDto.getOwnerId())
                 .orElseThrow(() -> new RuntimeException("Owner not found"));
         
@@ -61,7 +84,9 @@ public class PetService {
         pet.setOwner(owner);
         pet.setBreed(breed);
         
+        logger.info("💾 Pet kaydediliyor...");
         Pet savedPet = petRepository.save(pet);
+        logger.info("✅ Pet başarıyla kaydedildi: ID={}", savedPet.getId());
         return convertToDto(savedPet);
     }
 

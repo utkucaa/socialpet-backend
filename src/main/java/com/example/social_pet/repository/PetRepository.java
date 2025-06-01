@@ -10,7 +10,8 @@ import java.util.List;
 @Repository
 public interface PetRepository extends JpaRepository<Pet, Long> {
 
-    // Aktif petleri getirmek için
+    // Find active pets
+    List<Pet> findByIsActiveTrue();
 
     // Kullanıcıya ait petleri getirmek için
     List<Pet> findByOwnerId(Long ownerId);

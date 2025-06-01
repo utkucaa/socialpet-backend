@@ -31,20 +31,17 @@ public class OpenAIService {
 
     public String analyzeCatBreed(MultipartFile imageFile) throws IOException {
         try {
-            // Convert image to base64
+            
             byte[] imageBytes = imageFile.getBytes();
             String base64Image = Base64.getEncoder().encodeToString(imageBytes);
 
-            // Prepare headers
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.setBearerAuth(apiKey);
 
-            // Prepare request body
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", "gpt-4o");
 
-            // Create messages array with system prompt and user content
             Map<String, Object> systemMessage = new HashMap<>();
             systemMessage.put("role", "system");
             systemMessage.put("content", "Sen bir kedi türü tanımlama uzmanısın. Verilen görüntüyü analiz ederek kedinin türünü belirle. Yalnızca kedi türünün adını ve çok kısa bir açıklamasını ver. Cevabın mutlaka Türkçe olmalıdır. Eğer kedinin türünü belirleyemezsen, 'unknown' yanıtını ver. Eğer görüntüde bir kedi yoksa, 'not_a_cat' yanıtını ver. JSON formatında dönüş yap. ve doğruluk oranını da döndür. Örnek cevap: { 'breed': 'Siyam', 'confidence': 95 }, asla markdown ya da başka format dönme, sadece JSON formatında dönüş yap.");
