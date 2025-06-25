@@ -30,6 +30,10 @@ public class AnswerService {
         return answerRepository.findById(id);
     }
 
+    public List<Answer> getAnswersByQuestionId(Long questionId) {
+        return answerRepository.findByQuestionId(questionId);
+    }
+
     public Answer updateAnswer(Answer answer) {
         return answerRepository.save(answer);
     }

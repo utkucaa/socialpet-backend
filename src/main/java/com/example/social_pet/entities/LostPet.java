@@ -1,6 +1,7 @@
 package com.example.social_pet.entities;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -41,6 +42,7 @@ public class LostPet {
     private String contactInfo;
 
     @Column(name = "last_seen_date")
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate lastSeenDate;
 
     @Column(name = "last_seen_location")

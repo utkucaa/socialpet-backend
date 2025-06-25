@@ -37,6 +37,11 @@ public class LostPetService {
         return lostPetRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
     }
 
+    // Admin için tüm ilanları listeleme işlemi (pending, approved, rejected)
+    public List<LostPet> getAllLostPetsForAdmin() {
+        return lostPetRepository.findAll(); // Admin tüm ilanları görebilir
+    }
+
     // Onay bekleyen ilanları listeleme işlemi (admin için)
     public List<LostPet> getPendingLostPets() {
         return lostPetRepository.findByApprovalStatus(ApprovalStatus.PENDING);

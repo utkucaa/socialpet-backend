@@ -1,6 +1,7 @@
 package com.example.social_pet.controller;
 
 import com.example.social_pet.dto.AdminUserDTO;
+import com.example.social_pet.dto.AdoptionResponseDTO;
 import com.example.social_pet.dto.UserDTO;
 import com.example.social_pet.entities.Adoption;
 import com.example.social_pet.entities.LostPet;
@@ -167,17 +168,45 @@ public class AdminController {
         response.put("pendingUsers", userService.getPendingUsers().stream()
                 .map(AdminUserDTO::new)
                 .collect(Collectors.toList()));
-        response.put("pendingAdoptions", adoptionService.getPendingAdoptions());
+        response.put("pendingAdoptions", adoptionService.getPendingAdoptions().stream()
+                .map(AdoptionResponseDTO::new)
+                .collect(Collectors.toList()));
         response.put("pendingLostPets", lostPetService.getPendingLostPets());
         return ResponseEntity.ok(response);
+    }
+
+    // Get all listings (both adoptions and lost pets - pending, approved, rejected)
+    @GetMapping("/all-listings")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> getAllListings() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("adoptions", adoptionService.getAllAdoptionsForAdmin().stream()
+                .map(AdoptionResponseDTO::new)
+                .collect(Collectors.toList()));
+        response.put("lostPets", lostPetService.getAllLostPetsForAdmin());
+        return ResponseEntity.ok(response);
+    }
+
+    // Get all adoptions (for admin management)
+    @GetMapping("/adoptions")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AdoptionResponseDTO>> getAllAdoptionsForAdmin() {
+        List<Adoption> allAdoptions = adoptionService.getAllAdoptionsForAdmin();
+        List<AdoptionResponseDTO> adoptionDTOs = allAdoptions.stream()
+                .map(AdoptionResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(adoptionDTOs);
     }
 
     // Get pending adoption listings
     @GetMapping("/adoptions/pending")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Adoption>> getPendingAdoptions() {
+    public ResponseEntity<List<AdoptionResponseDTO>> getPendingAdoptions() {
         List<Adoption> pendingAdoptions = adoptionService.getPendingAdoptions();
-        return ResponseEntity.ok(pendingAdoptions);
+        List<AdoptionResponseDTO> adoptionDTOs = pendingAdoptions.stream()
+                .map(AdoptionResponseDTO::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(adoptionDTOs);
     }
 
     // Approve adoption listing
@@ -210,6 +239,14 @@ public class AdminController {
     public ResponseEntity<List<LostPet>> getPendingLostPets() {
         List<LostPet> pendingLostPets = lostPetService.getPendingLostPets();
         return ResponseEntity.ok(pendingLostPets);
+    }
+
+    // Get all lost pets (for admin management)
+    @GetMapping("/lostpets")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<LostPet>> getAllLostPetsForAdmin() {
+        List<LostPet> allLostPets = lostPetService.getAllLostPetsForAdmin();
+        return ResponseEntity.ok(allLostPets);
     }
 
     // Approve lost pet listing

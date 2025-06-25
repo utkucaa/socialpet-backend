@@ -70,4 +70,6 @@ public class Pet {
     @OneToMany(mappedBy = "pet", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Medication> medications = new ArrayList<>();
+
+
 }

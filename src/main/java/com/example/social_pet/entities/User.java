@@ -56,6 +56,9 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
     private List<LostPet> lostPets = new ArrayList<>();
+
+
+
     private Date joinDate;
 
     @PrePersist

@@ -59,6 +59,13 @@ public class AdoptionService {
             adoption.setViewCount(0);
             adoption.setSlug(generateSlug(adoptionRequest.getTitle()));
 
+            // Resim yükleme işlemi - eğer resim varsa
+            if (adoptionRequest.getImageUrl() != null && !adoptionRequest.getImageUrl().isEmpty()) {
+                String fileName = fileStorageService.storeFile(adoptionRequest.getImageUrl());
+                String fileUrl = "/api/v1/files/" + fileName;
+                adoption.setImageUrl(fileUrl);
+            }
+
             if (adoptionRequest.getCreatedAt() == null) {
                 adoption.setCreatedAt(LocalDate.now().atStartOfDay());
             } else {
@@ -121,6 +128,14 @@ public class AdoptionService {
         adoptionRepository.save(adoption);
     }
 
+    public List<Adoption> getAllAdoptions() {
+        return adoptionRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
+    }
+    
+    public List<Adoption> getAllAdoptionsForAdmin() {
+        return adoptionRepository.findAll(); // Admin tüm ilanları görebilir (pending, approved, rejected)
+    }
+    
     public List<Adoption> getRecentAds() {
         List<Adoption> adoptions = adoptionRepository.findByApprovalStatus(ApprovalStatus.APPROVED);
         return adoptions;

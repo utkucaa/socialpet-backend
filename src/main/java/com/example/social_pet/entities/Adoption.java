@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 import com.example.social_pet.entities.ApprovalStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 @Data
 @Entity
@@ -42,6 +43,7 @@ public class Adoption {
     private String slug;
 
     @Column(nullable = true)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
