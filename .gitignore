@@ -63,3 +63,8 @@ src/main/resources/application.properties
 
 uploads/
 src/main/resources/model/best_model.h5
+
+# Ignore docs, logs and uploads
+*.md
+*.log
+uploads/
